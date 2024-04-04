@@ -54,6 +54,9 @@ class MEL_9000_k_images():
         self.image = self.image[mid_y_indx - size_indx:mid_y_indx + size_indx,
                                 mid_x_indx - size_indx:mid_x_indx + size_indx]
         
+    def remove_background(self, background):
+        self.image = self.image - background
+        
     ## Rotate image
     def rotate_image(self, angle):
         self.image = ndimage.rotate(self.image, angle, reshape=False)
@@ -145,6 +148,7 @@ integrate_over = 50
 n = 1
 angle = PI/3
 GaAs1_4_image.rotate_image(8.9)
+GaAs1_4_image.remove_background(2.8)
 GaAs1_4_image.set_image_bounds(middle, size)
 # GaAs1_4_image.plot_image()
 

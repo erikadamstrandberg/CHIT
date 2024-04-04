@@ -56,21 +56,37 @@ width_pad       = 2
 height_pad      = 3
 
 ## Data
-rw_sweep_path = Path(data_path, 'rw_sweep_batch3.txt')
-rw_sweep_dict = create_data_dict(rw_sweep_path)
+# paths = ['rw_sweep_h_500_600.txt', 'rw_sweep_h_600_700.txt']
+paths = ['rw_sweep_h_500_600.txt']
+for i, path in enumerate(paths):
+    rw_sweep_path = Path(data_path, path)
+    
+    if i == 0:
+        ## Parameters for brute force sweep
+        rw_sweep_dict = create_data_dict(rw_sweep_path)
+        radius = rw_sweep_dict['r']
+        h_meta = rw_sweep_dict['h_meta']
+        
+        
+    else: 
+        rw_sweep_dict_temp = create_data_dict(rw_sweep_path)
+        radius = np.concatenate((radius, rw_sweep_dict_temp['r']))
+        h_meta = np.concatenate((h_meta, rw_sweep_dict_temp['h_meta']))
+        
+        rw_sweep_dict['reflection']       = np.concatenate((rw_sweep_dict['reflection'], rw_sweep_dict_temp['reflection']))
+        rw_sweep_dict['transmission']     = np.concatenate((rw_sweep_dict['transmission'], rw_sweep_dict_temp['transmission']))
+        rw_sweep_dict['reflection_phi']   = np.concatenate((rw_sweep_dict['reflection_phi'], rw_sweep_dict_temp['reflection_phi']))
+        rw_sweep_dict['transmission_phi'] = np.concatenate((rw_sweep_dict['transmission_phi'], rw_sweep_dict_temp['transmission_phi']))
+    
+        
+    ## Unique parameters values
+    unique_radius = np.unique(radius)
+    unique_h_meta = np.unique(h_meta)
+    
+    ## Data matrices
+    transmission = np.zeros(shape=(len(unique_h_meta), len(unique_radius)))
+    phi_t        = np.zeros(shape=(len(unique_h_meta), len(unique_radius)))
 
-## Parameters for brute force sweep
-radius = rw_sweep_dict['r']
-h_meta = rw_sweep_dict['h_meta']
-extent = np.array([radius.min(), radius.max(), h_meta.min(), h_meta.max()])
-
-## Unique parameters values
-unique_radius = np.unique(radius)
-unique_h_meta = np.unique(h_meta)
-
-## Data matrices
-transmission = np.zeros(shape=(len(unique_h_meta), len(unique_radius)))
-phi_t        = np.zeros(shape=(len(unique_h_meta), len(unique_radius)))
 
 ## Arange data
 for i in range(len(unique_radius)):
@@ -79,9 +95,11 @@ for i in range(len(unique_radius)):
         phi_t[j, i]        = rw_sweep_dict['transmission_phi'][i*len(unique_h_meta) + j]
 
 
+extent = np.array([radius.min(), radius.max(), h_meta.min(), h_meta.max()])
+    
 ## -------------------------- Select data for plotting -------------------------- ##
 pick_radius = np.array([70, 120])    
-pick_height = 790
+pick_height = 650
 
 if pick_radius[0] < unique_radius.min() or pick_radius[1] > unique_radius.max():
     print('Warning: Picked radiie is out of data range!')
