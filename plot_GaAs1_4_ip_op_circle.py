@@ -5,12 +5,13 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import cv2
 from scipy import ndimage
+from PIL import Image, ImageDraw
 
 PI = np.pi
 
 ## Data path
 project_path = Path(__file__).parent
-measurement_path    = Path(project_path, 'measurement', 'data', 'GaAs1_4')
+measurement_path    = Path(project_path, 'measurement', 'data', 'GaAs1_4_ref_ip_op')
 
 ## Select image to analyze
 what_image_to_analyse = 0
@@ -148,19 +149,33 @@ class MEL_9000_k_images():
         
         y_cs_integrated = np.sum(xy_cs_bottom, axis=1)
         x_cs_integrated = np.sum(y_cs_integrated, axis = 0)
-    
+        
+        h, w = xy_cs_middle.shape
+        # lum_img = Image.new('L', [h,w], 0)
+        # draw = ImageDraw.Draw(lum_img) 
+        # draw.pieslice([(0,0),(h,w)],0,360,fill=255) 
+        # lum_img_arr = np.array(lum_img)
+        # circle_cs = np.dstack((xy_cs_middle, lum_img_arr))
+        
+        radius = 40
+        mask = np.zeros_like(xy_cs_middle)
+        mask = cv2.circle(mask, (h-60,w-60), radius, (255,255,255), -1)
+        dst = cv2.bitwise_and(xy_cs_middle, mask)
+        
         fontsize_title  = 14
         fontsize_axis   = 13
-        # fontsize_legend = 10
-        # outer_pad       = 3
-        # width_pad       = 2
-        # height_pad      = 3
+        fontsize_legend = 10
+        outer_pad       = 3
+        width_pad       = 2
+        height_pad      = 1
     
-        fig     = plt.figure(figsize=(10,8))
-        ax1     = fig.add_subplot(221)
-        ax2     = fig.add_subplot(222)
-        ax3     = fig.add_subplot(223)
-        ax4     = fig.add_subplot(224)
+        fig     = plt.figure(figsize=(15,10))
+        ax1     = fig.add_subplot(321)
+        ax2     = fig.add_subplot(322)
+        ax3     = fig.add_subplot(323)
+        ax4     = fig.add_subplot(324)
+        ax5     = fig.add_subplot(325)
+        ax6     = fig.add_subplot(326)
         #ax_list = [ax1, ax2, ax3, ax4]
         
         extent    = np.array([self.x_axis.min(), self.x_axis.max(),
@@ -188,30 +203,43 @@ class MEL_9000_k_images():
         ax3.set_ylabel(r'$k_y/k$', fontsize=fontsize_axis)
         ax3.set_title(r'Cut section to intergrate over, top', fontsize=fontsize_title)
         
-        ## Figure 10 - Selected cross-section to integrate over
+        ## Figure 11 - Selected cross-section to integrate over
         ax4.imshow(xy_cs_bottom, origin='lower', cmap='plasma')
         ax4.set_xlabel(r'$k_x/k$', fontsize=fontsize_axis)
         ax4.set_ylabel(r'$k_y/k$', fontsize=fontsize_axis)
         ax4.set_title(r'Cut section to intergrate over, bottom', fontsize=fontsize_title)
         
-        return x_cs_integrated
+        ## Figure 11 - Selected cross-section to integrate over
+        ax5.imshow(mask, origin='lower', cmap='plasma')
+        ax4.set_xlabel(r'$k_x/k$', fontsize=fontsize_axis)
+        ax4.set_ylabel(r'$k_y/k$', fontsize=fontsize_axis)
+        ax3.set_title(r'Aperture', fontsize=fontsize_title)
+        
+        ax6.imshow(dst, origin='lower', cmap='plasma')
+        ax4.set_xlabel(r'$k_x/k$', fontsize=fontsize_axis)
+        ax4.set_ylabel(r'$k_y/k$', fontsize=fontsize_axis)
+        ax3.set_title(r'Cut section with aperture, top', fontsize=fontsize_title)
+        
+        plt.tight_layout(pad=outer_pad, w_pad=width_pad, h_pad=height_pad)
+        
+        #return xy_cs_middle.shape
         
         
 GaAs1_4_image = MEL_9000_k_images(image_path)
 
-middle = (0.09, 0.23)
+middle = (-0.11, -0.25)
 # GaAs1_4_image.plot_image()
 size = 1
 
 x_pos = 100e-4
-y_pos_mid = 20e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8600e-4
+y_pos_mid = -150e-4
+y_pos_top = 8300e-4
+y_pos_bottom = -8900e-4
 
-integrate_over = 40
+integrate_over = 60
 n = 1
 angle = PI/3
-GaAs1_4_image.rotate_image(8.9)
+GaAs1_4_image.rotate_image(-0.4)
 GaAs1_4_image.remove_background(2.8)
 GaAs1_4_image.set_image_bounds(middle, size)
 # GaAs1_4_image.plot_image()

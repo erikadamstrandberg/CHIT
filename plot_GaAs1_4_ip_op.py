@@ -10,7 +10,7 @@ PI = np.pi
 
 ## Data path
 project_path = Path(__file__).parent
-measurement_path    = Path(project_path, 'measurement', 'data', 'GaAs1_4')
+measurement_path    = Path(project_path, 'measurement', 'data', 'GaAs1_4_ref_ip_op')
 
 ## Select image to analyze
 what_image_to_analyse = 0
@@ -199,19 +199,19 @@ class MEL_9000_k_images():
         
 GaAs1_4_image = MEL_9000_k_images(image_path)
 
-middle = (0.09, 0.23)
+middle = (-0.11, -0.25)
 # GaAs1_4_image.plot_image()
 size = 1
 
 x_pos = 100e-4
-y_pos_mid = 20e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8600e-4
+y_pos_mid = -150e-4
+y_pos_top = 8300e-4
+y_pos_bottom = -8900e-4
 
-integrate_over = 40
+integrate_over = 60
 n = 1
 angle = PI/3
-GaAs1_4_image.rotate_image(8.9)
+GaAs1_4_image.rotate_image(-0.4)
 GaAs1_4_image.remove_background(2.8)
 GaAs1_4_image.set_image_bounds(middle, size)
 # GaAs1_4_image.plot_image()
