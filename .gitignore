@@ -3,3 +3,6 @@
 **/__pycache__/*
 **/*.mph
 **/*.mph.lock
+**/measurement/**/comments.txt
+**/measurement/**/DisplaySettings.json
+**/measurement/**/*metadata.txt
