@@ -61,7 +61,10 @@ paths = ['rw_sweep_h_500_600.txt',
          'rw_sweep_h_700_800.txt', 
          'rw_sweep_h_800_900.txt', 
          'rw_sweep_h_900_1000.txt', 
-         'rw_sweep_h_1000_1100.txt']
+         'rw_sweep_h_1000_1100.txt',
+         'rw_sweep_h_1100_1200.txt',
+         'rw_sweep_h_1200_1300.txt',
+         'rw_sweep_h_1300_1400.txt']
 
 for i, path in enumerate(paths):
     rw_sweep_path = Path(data_path, path)
