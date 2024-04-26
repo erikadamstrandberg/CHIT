@@ -150,7 +150,7 @@ P_int = np.zeros(len(x))
 for i in range(len(x)):
     P_int[i] = 2*np.sum(P_guass[0:i])*dx
     
-P_int = P_int/P_tot
+# P_int = P_int/P_tot
 
 plt.figure(1)
 plt.plot(x, P_int)

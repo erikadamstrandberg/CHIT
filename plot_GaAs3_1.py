@@ -11,7 +11,7 @@ what_measurement = 0
 image_path = list_image_path(measurment_name, what_measurement)
 image = MEL_9000_k_images(image_path)
 
-middle = (-0.11, -0.25)
+middle = (-0.05, -0.25)
 # GaAs1_4_image.plot_image()
 size = 1
 
@@ -27,6 +27,7 @@ angle_rad = angle*PI/180
 image.rotate_image(-2.5)
 image.remove_background(0)
 image.set_image_bounds(middle, size)
+
 
 contrast = 20
 brightness = 10
