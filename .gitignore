@@ -1,7 +1,8 @@
 **/_Output/*
 **/.spyproject/*
 **/__pycache__/*
-**/*.mph
+**/3d_models/**
+**/2d_models/**
 **/*.mph.lock
 **/measurement/**/comments.txt
 **/measurement/**/DisplaySettings.json
