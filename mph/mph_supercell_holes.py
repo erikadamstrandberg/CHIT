@@ -41,7 +41,7 @@ R_1_y  = 'ewfd.Rorder_p1_0_op'
 
 ports_eval = [T_0_x, T_0_y, T__1_x, T__1_y, T_1_x, T_1_y, R_0_x, R_0_y, R__1_x, R__1_y, R_1_x, R_1_y]
 
-# E_x_array = np.zeros(len(ports_eval))
+E_x_array = np.zeros(len(ports_eval))
 E_y_array = np.zeros(len(ports_eval))
 
 #%% Run Study 1 with x pol light
