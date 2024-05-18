@@ -123,6 +123,17 @@ for i in range(len(dphase)):
     
 x_angle_design_unique = np.unique(x_angle_design)
 
+plot_phase_map = False
+if plot_phase_map:
+    fig     = plt.figure(figsize=(10,8))
+    ax1     = fig.add_subplot(121)
+    ax1.imshow(np.mod(phase_map_for_gen, 2*np.pi))
+    ax2     = fig.add_subplot(122)
+    plt.plot(cs_phase_map)
+    print('Needed angles: ' + str(x_angle_design_unique))
+    
+    #%%
+
 ### Find the Fresnel regions 
 fresnel_regions = {}
 x_reshaped = np.zeros(1)
@@ -142,9 +153,9 @@ for i, x_angle in enumerate(x_angle_design):
     
     
     number_supercells = np.abs(region.max() - region.min())
-    fresnel_regions[x_angle] =  {'from' : np.round(region.min(), 4),
-                                 'to' : np.round(region.max(), 4),
-                                 'Pd' : np.round(Pd, 4), 
+    fresnel_regions[x_angle] =  {'from' : np.round(region.min(), 3),
+                                 'to' : np.round(region.max(), 3),
+                                 'Pd' : np.round(Pd, 3), 
                                  'number' : number_supercells,
                                  'anglex' : x_angle,
                                  'g1' : g1,
