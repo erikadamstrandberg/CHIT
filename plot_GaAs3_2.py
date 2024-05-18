@@ -205,17 +205,19 @@ class MEL_9000_k_images():
         ax3.set_ylabel(r'Counts [-]', fontsize=fontsize_axis)
         ax3.set_title(r'Integrated cross-section', fontsize=fontsize_title)
         
-        plt.figure(2)
-        plt.imshow(self.image, extent=extent, origin='lower', cmap='plasma')
-        plt.plot(outer_bound_k_x, outer_bound_k_y, 'black')
-        plt.plot(diffracted_k_x, diffracted_k_y, '--', color='red', linewidth=0.5)
-        plt.xlabel(r'$k_x/k$', fontsize=fontsize_axis)
-        plt.ylabel(r'$k_y/k$', fontsize=fontsize_axis)
-        plt.title(r'Measurement, 61$^{\circ}$', fontsize=fontsize_title)
-        plt.savefig(mypath/'Measurement_61.png', dpi=600, format='png')
+        # plt.figure(2)
+        # plt.imshow(self.image, extent=extent, origin='lower', cmap='plasma')
+        # plt.plot(outer_bound_k_x, outer_bound_k_y, 'black')
+        # plt.plot(diffracted_k_x, diffracted_k_y, '--', color='red', linewidth=0.5)
+        # plt.xlabel(r'$k_x/k$', fontsize=fontsize_axis)
+        # plt.ylabel(r'$k_y/k$', fontsize=fontsize_axis)
+        # plt.title(r'Measurement, 61$^{\circ}$', fontsize=fontsize_title)
+        # plt.savefig(mypath/'Measurement_61.png', dpi=600, format='png')
         
         
         plt.tight_layout(pad=outer_pad, w_pad=width_pad, h_pad=height_pad)
+        
+        return x_cs_integrated
         
 
     def plot_3_areas(self, x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over):
@@ -337,13 +339,15 @@ class MEL_9000_k_images():
 #PI = np.pi
 
 ## Data path
-measurment_name = 'GaAs3_1'
-what_measurement = 0
+measurment_name = 'GaAs3_2'
+what_measurement = 1
 
 image_path = list_image_path(measurment_name, what_measurement)
 image = MEL_9000_k_images(image_path)
 
-middle = (-0.05, -0.25)
+
+
+middle = (-0.21, -0.02)
 # GaAs1_4_image.plot_image()
 size = 1
 
@@ -356,17 +360,59 @@ y_pos_bottom = -8750e-4
 
 integrate_over = 30
 n = 1
-angle = 61
+angle = 55
 angle_rad = angle*PI/180
-image.rotate_image(-2.5)
+image.rotate_image(-264.5)
 image.remove_background(0)
 image.set_image_bounds(middle, size)
 
 
 contrast = 20
 brightness = 10
-# image.plot_image(contrast, brightness)
-image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over)
+#image.plot_image(contrast, brightness)
+
+ffdeg = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over)
+#%%
+measurment_name = 'GaAs3_2'
+what_measurement = 3
+
+image_path = list_image_path(measurment_name, what_measurement)
+image = MEL_9000_k_images(image_path)
+
+
+
+middle = (-0.25, -0.1)
+# GaAs1_4_image.plot_image()
+size = 1
+
+y_pos = 100e-4
+x_pos = 200e-4
+y_pos_mid = -50e-4
+y_pos_top = 8600e-4
+y_pos_bottom = -8750e-4
+
+
+integrate_over = 30
+n = 1
+angle = 65
+angle_rad = angle*PI/180
+image.rotate_image(-85)
+image.remove_background(0)
+image.set_image_bounds(middle, size)
+
+
+contrast = 20
+brightness = 10
+sfdeg = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over)
 # 
 #image.plot_3_areas(x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over)
 
+#%%
+plt.figure()
+plt.plot(ffdeg, 'red',  label = r'$55^{\circ}$')
+plt.plot(sfdeg, 'black',  label = r'$65^{\circ}$')
+plt.grid(linewidth=1, alpha=0.3)
+plt.xlabel(r'$k_x/k$', fontsize=12)
+plt.ylabel(r'Counts [-]', fontsize=12)
+plt.legend() 
+plt.title(r'Integrated cross-section', fontsize=12)

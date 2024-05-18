@@ -81,7 +81,7 @@ comsol_g3    = np.array(comsol_dataframe['g3'])
 comsol_g4    = np.array(comsol_dataframe['g4'])
 
 ### Set size of meta surface 
-L   = 250*UM
+L   = 500*UM
 
 ### Pd does not really matter since it will be reshaped!
 Pd  = 50*NM
@@ -103,9 +103,9 @@ R    = np.sqrt(X**2 + Y**2)
 ### Parameters for generated lens
 n = 1
 lam0 = 984*NM
-anglex = -55*DEG_TO_RAD
+anglex = -60*DEG_TO_RAD
 angley = 0
-f      = 1000*UM
+f      = 800*UM
 
 (gradient_to_angle_look_up, dphase_array) = gradient_to_angle(X, Y, n, lam0, Nnd)
 
@@ -199,7 +199,7 @@ R_reshaped             = np.sqrt(X_reshaped**2 + Y_reshaped**2)
 
 ### ------------------------ Start creating mask ------------------------ ###
 save_folder_path = create_save_folder()
-ms_name = 'cylindrical_lens'
+ms_name = 'cylindrical_lens_60'
 
 layer_dict = {'ms'     : {'layer': 1, 'datatype' : 0},
               'labels' : {'layer': 2, 'datatype' : 1}}

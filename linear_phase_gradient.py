@@ -1,7 +1,47 @@
+import os
+from pathlib import Path
+
+mypath = Path(Path(__file__).resolve().parents[0])
+
+os.chdir(str(mypath))
+
+
 #%%
 import matplotlib.pyplot as plt
 import numpy as np
-from pas_functions import PAS, fft2c, ifft2c
+#from pas_functions import PAS, fft2c, ifft2c
+
+def fft2c(x):
+    '''
+    2D Fourier transform with shift!
+    '''
+    return np.fft.fftshift(np.fft.fft2(np.fft.fftshift(x)))
+
+def ifft2c(x):
+    '''
+    2D inverse Fourier transform with shift!
+    '''
+    return np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(x)))
+
+def PAS(E1, L, N, a, lam0, n):
+    '''
+    Propagation of angular spectrum square sampling grid
+    '''
+    delta_k = 2*np.pi/(N*a)
+    kx  = np.arange(-(N/2)*delta_k, (N/2)*delta_k, delta_k)
+    ky  = kx
+    KX, KY = np.meshgrid(kx,ky)
+    
+    k = 2*np.pi*n/lam0
+    KZ = np.sqrt(k**2 - KX**2 - KY**2, dtype=complex)
+    phase_prop = np.exp(1j*KZ*L)
+
+    A = (a**2/(4*np.pi**2))*fft2c(E1)
+    B = A*phase_prop
+    E2 = (N*delta_k)**2*ifft2c(B)
+    
+    return E2
+
 
 PI = np.pi
 RAD = PI/180
@@ -59,7 +99,7 @@ def plot_three_diffractive_orders(E_incident, ax, ay, Nx, Ny, X, Y, anglex, eta=
     
         I_k = I_k_t1 + I_k_t0 + I_k_t_1
 
-    fig     = plt.figure(figsize=(10,8))
+    fig     = plt.figure(1, figsize=(10,8))
     ax1     = fig.add_subplot(121)
     ax2     = fig.add_subplot(122)
 
@@ -73,6 +113,19 @@ def plot_three_diffractive_orders(E_incident, ax, ay, Nx, Ny, X, Y, anglex, eta=
     ax2.imshow(I_k, extent=extent_k, cmap='plasma')
     ax2.plot(kx_objective, ky_objective, color='black')
     ax2.plot(kx_beam, ky_beam, '--', color='red', linewidth=0.5)
+    
+    fontsize_title  = 14
+    fontsize_axis   = 13
+    
+    plt.figure(2)
+    plt.imshow(I_k, extent=extent_k, cmap='plasma')
+    plt.plot(kx_objective, ky_objective, color='black')
+    plt.plot(kx_beam, ky_beam, '--', color='red', linewidth=0.5)
+    plt.xlabel(r'$k_x/k$', fontsize=fontsize_axis)
+    plt.ylabel(r'$k_y/k$', fontsize=fontsize_axis)
+    plt.title(r'PAS, 61 $^{\circ}$', fontsize=fontsize_title)
+    plt.savefig(mypath/'PAS_61.png', dpi=600, format='png')
+    
     
     
 #%% Create beam
@@ -103,9 +156,9 @@ offset_y    = 0
 
 anglex = 61*RAD
 
-eta_t1  = 0.80
-eta_t0  = 0.80
-eta_t_1 = 0.80
+eta_t1  = 0.962
+eta_t0  = 0.015
+eta_t_1 = 0.023
 
 eta = np.array([eta_t1, eta_t0, eta_t_1])
 
