@@ -65,7 +65,7 @@ def gradient_to_angle(X, Y, n, lam0, Nnd):
 
 ### Get deflecting cylindrical lens gradient phase map
 def deflecting_spherical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f):
-    return 2*PI - (2*PI*n/lam0)*np.sqrt((X**2 + Y**2 + f**2) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
+    return 2*PI - (2*PI*n/lam0)*(np.sqrt(X**2 + Y**2 + f**2) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
 
 ### Grating equation for Pd 
 def Pd_grating_equation(lam0, theta):
@@ -106,11 +106,11 @@ X_for_gen, Y_for_gen = np.meshgrid(x_for_gen, y)
 R    = np.sqrt(X**2 + Y**2)
 
 ### Parameters for generated lens
-n = 1
-lam0 = 984*NM
-anglex = -40*DEG_TO_RAD
-angley = 0*DEG_TO_RAD
-f      = 600*UM
+n        = 1
+lam0     = 984*NM
+anglex   = -40*DEG_TO_RAD
+angley   = 0*DEG_TO_RAD
+f        = 600*UM
 r_offset = -f*np.tan(np.abs(anglex))
 
 (gradient_to_angle_look_up, dphase_array) = gradient_to_angle(X, Y, n, lam0, Nnd)
@@ -235,6 +235,7 @@ key = 'ms'
 top = gf.Component('TOP') 
 
 end_radius_diff = 0
+angles_used_to_create_ms = []
 for k, anglex in enumerate(fresnel_regions.keys()):
     bool_c = gf.Component('bool')
     
@@ -277,20 +278,29 @@ for k, anglex in enumerate(fresnel_regions.keys()):
     
         super_cell = create_cut_comp(angle_DEG/2, r, g1, g2, g3, g4, np.abs(current_radius), current_width, Pnd, L, layer_dict)
     
-        for j in range(number_cells_added):
+        for j in range(number_cells_added):            
             current_x = r_offset - current_radius*np.cos(angle_RAD*j)
             current_y = current_radius*np.sin(angle_RAD*j)
             current_r = np.sqrt(current_x**2 + current_y**2)
-            
+
             if current_r < L_real and current_x < L_real:
-                print('Added' + ' with angle: ' + str(anglex))
+                print('Added' + ' with angle: ' + str(anglex) + ' with ' + str(number_cells_added) + ' cells')
+                angles_used_to_create_ms.append(anglex)
                 super_cell_r = top << super_cell
                 super_cell_r.rotate(np.pi*RAD_TO_DEG + angle_DEG*j, (0, 0)).translate(-r_offset, 0)
     
     end_radius_diff = current_radius - region_to + Pd/2
     
-print('Angles used: ' + str(x_angle_design_unique))
-      
+angles_used_to_create_ms = np.unique(np.array(angles_used_to_create_ms))
+
+print('Angles used to create phase profile: ' + str(x_angle_design_unique))
+print('Angles used In the cutout MS: ' + str(x_angle_design_unique))
+
+
 save_path = Path(save_folder_path, ms_name)
 top.write_gds(str(save_path) + '.gds')
  
+#%%
+
+
+

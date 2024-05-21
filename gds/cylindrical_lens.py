@@ -65,7 +65,7 @@ def gradient_to_angle(X, Y, n, lam0, Nnd):
 
 ### Get deflecting cylindrical lens gradient phase map
 def deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f):
-    return 2*PI - (2*PI*n/lam0)*(np.sqrt((X**2 + f**2)) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
+    return 2*PI - (2*PI*n/lam0)*(np.sqrt(X**2 + f**2) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
 
 ### Grating equation for Pd 
 def Pd_grating_equation(lam0, theta):

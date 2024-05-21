@@ -69,8 +69,8 @@ def plot_focused_beam(E_incident, n, NA_objective, ax, ay, Nx, Ny, X, Y, anglex,
     kx_beam = NA_beam*np.cos(theta)
     ky_beam = NA_beam*np.sin(theta)
     
-    #T_deflecting_lens = deflecting_lens_gradient_map(X, Y, n, lam0, anglex, angley, f)
-    T_deflecting_lens = deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f)
+    T_deflecting_lens = np.exp(1j*deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f))
+    
     E_k = fft2c(E_incident*T_deflecting_lens)
     I_k = np.abs(E_k)**2
     I_k = I_k/np.max(I_k)
@@ -98,8 +98,8 @@ def plot_focused_beam(E_incident, n, NA_objective, ax, ay, Nx, Ny, X, Y, anglex,
     
 # Create beam
 # Setup simulation window
-Lx = 2*MM
-Ly = 2*MM
+Lx = 1*MM
+Ly = 1*MM
 
 ax = 520*NM
 ay = 520*NM
@@ -124,10 +124,10 @@ offset_y    = 0
 
 NA_objective = 0.95
 
-anglex = 55*RAD
+anglex = 50*RAD
 angley = 0*RAD
 
-f = 10*UM
+f = 600*UM
 
 E_incident = np.exp(-((X - offset_x)**2 + (Y - offset_y)**2)/omega0**2)
 
