@@ -65,7 +65,7 @@ def gradient_to_angle(X, Y, n, lam0, Nnd):
 
 ### Get deflecting cylindrical lens gradient phase map
 def deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f):
-    return 2*PI - (2*PI*n/lam0)*np.sqrt((X**2 + f**2) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
+    return 2*PI - (2*PI*n/lam0)*(np.sqrt((X**2 + f**2)) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
 
 ### Grating equation for Pd 
 def Pd_grating_equation(lam0, theta):
@@ -81,7 +81,8 @@ comsol_g3    = np.array(comsol_dataframe['g3'])
 comsol_g4    = np.array(comsol_dataframe['g4'])
 
 ### Set size of meta surface 
-L   = 500*UM
+# L   = 500*UM
+L = 40*UM
 
 ### Pd does not really matter since it will be reshaped!
 Pd  = 50*NM
@@ -103,13 +104,14 @@ R    = np.sqrt(X**2 + Y**2)
 ### Parameters for generated lens
 n = 1
 lam0 = 984*NM
-anglex = -60*DEG_TO_RAD
+# anglex = -60*DEG_TO_RAD
+anglex = 0
 angley = 0
 f      = 800*UM
 
 (gradient_to_angle_look_up, dphase_array) = gradient_to_angle(X, Y, n, lam0, Nnd)
-
 phase_map = deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f)
+
 phase_map_for_gen = deflecting_cylindrical_lens_gradient_map(X_for_gen, Y_for_gen, n, lam0, anglex, angley, f)
 cs_phase_map = phase_map_for_gen[Nnd//2, :]
 dphase = np.diff(cs_phase_map)
@@ -120,6 +122,7 @@ for i in range(len(dphase)):
     current_dphase = dphase[i]
     current_index = np.argmin(np.abs(current_dphase - dphase_array))
     x_angle_design[i] = gradient_to_angle_look_up[current_index]['anglex']
+    
     
 x_angle_design_unique = np.unique(x_angle_design)
 

@@ -111,7 +111,7 @@ lam0 = 984*NM
 anglex = -40*DEG_TO_RAD
 angley = 0*DEG_TO_RAD
 f      = 600*UM
-r_offset = -f*np.sin(np.abs(anglex))
+r_offset = -f*np.tan(np.abs(anglex))
 
 (gradient_to_angle_look_up, dphase_array) = gradient_to_angle(X, Y, n, lam0, Nnd)
 

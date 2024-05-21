@@ -220,7 +220,7 @@ class MEL_9000_k_images():
         return x_cs_integrated
         
 
-    def plot_3_areas(self, x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over):
+    def plot_3_areas(self, x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over, angle):
         
         mid_x_indx = np.argmin(np.abs(self.x_axis - x_pos))
         mid_y_indx = np.argmin(np.abs(self.y_axis - y_pos_mid))
@@ -253,8 +253,13 @@ class MEL_9000_k_images():
         dst_top = xy_cs_top*mask
         dst_bottom = xy_cs_bottom*mask
         
-        y_cs_integrated = np.sum(xy_cs_bottom, axis=1)
+        y_cs_integrated = np.sum(xy_cs_top, axis=1)
         x_cs_integrated = np.sum(y_cs_integrated, axis = 0)
+        
+        NA_diffracted = n*np.sin(angle)
+        theta = np.linspace(0, 2*PI, 1000)
+        diffracted_k_x = NA_diffracted*np.cos(theta)
+        diffracted_k_y = NA_diffracted*np.sin(theta)
         
         
         fontsize_title  = 14
@@ -284,7 +289,7 @@ class MEL_9000_k_images():
         ## Figure 00 - Raw image with outer bound k and wanted k
         ax1.imshow(self.image, extent=extent, origin='lower', cmap='plasma')
         # ax1.plot(outer_bound_k_x, outer_bound_k_y, 'black')
-        # ax1.plot(diffracted_k_x, diffracted_k_y, 'red')
+        ax1.plot(diffracted_k_x, diffracted_k_y, 'red')
         ax1.set_xlabel(r'$k_x/k$', fontsize=fontsize_axis)
         ax1.set_ylabel(r'$k_y/k$', fontsize=fontsize_axis)
         ax1.set_title(r'Raw image', fontsize=fontsize_title)
@@ -338,7 +343,7 @@ class MEL_9000_k_images():
 #PI = np.pi
 
 ## Data path
-measurment_name = 'GaAs3_2'
+measurment_name = 'GaAs3_3_right'
 what_measurement = 0
 
 image_path = list_image_path(measurment_name, what_measurement)
@@ -346,22 +351,22 @@ image = MEL_9000_k_images(image_path)
 
 
 
-middle = (-0.30, -0.11)
+middle = (0.17, 0.05)
 # GaAs1_4_image.plot_image()
 size = 1
 
 y_pos = 100e-4
-x_pos = 200e-4
-y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
+x_pos = 150e-4
+y_pos_mid = -50e-4 #2300e-4
+y_pos_top = 5800e-4
+y_pos_bottom = -5800e-4
 
 
-integrate_over = 30
+integrate_over = 100
 n = 1
-angle = 50
+angle = 35
 angle_rad = angle*PI/180
-image.rotate_image(-80.5)
+image.rotate_image(-270.3)
 image.remove_background(0)
 image.set_image_bounds(middle, size)
 
@@ -370,13 +375,14 @@ contrast = 20
 brightness = 10
 #image.plot_image(contrast, brightness)
 
-fzdeg = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over) #50
+tfdeg = image.plot_3_areas(x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over, angle) #35
+
 
 #%%
 #PI = np.pi
 
 ## Data path
-measurment_name = 'GaAs3_2'
+measurment_name = 'GaAs3_3_right'
 what_measurement = 1
 
 image_path = list_image_path(measurment_name, what_measurement)
@@ -384,22 +390,22 @@ image = MEL_9000_k_images(image_path)
 
 
 
-middle = (-0.22, -0.07)
+middle = (-0.25, -0.06)
 # GaAs1_4_image.plot_image()
 size = 1
 
-y_pos = 100e-4
-x_pos = 200e-4
-y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
+y_pos = 200e-4
+x_pos = -20e-4
+y_pos_mid = -100e-4
+y_pos_top = 6400e-4
+y_pos_bottom = -6600e-4
 
 
 integrate_over = 30
 n = 1
-angle = 50
+angle = 40
 angle_rad = angle*PI/180
-image.rotate_image(-90.5)
+image.rotate_image(-90.3)
 image.remove_background(0)
 image.set_image_bounds(middle, size)
 
@@ -408,14 +414,13 @@ contrast = 20
 brightness = 10
 #image.plot_image(contrast, brightness)
 
-fzdeg_v2 = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over) #50, v2
-
+fozdeg = image.plot_3_areas(x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over, angle) #40
 
 #%%
 #PI = np.pi
 
 ## Data path
-measurment_name = 'GaAs3_2'
+measurment_name = 'GaAs3_3_right'
 what_measurement = 2
 
 image_path = list_image_path(measurment_name, what_measurement)
@@ -423,22 +428,22 @@ image = MEL_9000_k_images(image_path)
 
 
 
-middle = (-0.20, -0.02)
+middle = (-0.23, -0.07)
 # GaAs1_4_image.plot_image()
 size = 1
 
 y_pos = 100e-4
-x_pos = 200e-4
-y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
+x_pos = 10e-4
+y_pos_mid = -200e-4
+y_pos_top = 7000e-4
+y_pos_bottom = -7400e-4
 
 
-integrate_over = 30
+integrate_over = 50
 n = 1
-angle = 55
+angle = 45
 angle_rad = angle*PI/180
-image.rotate_image(-264.5)
+image.rotate_image(-90.3)
 image.remove_background(0)
 image.set_image_bounds(middle, size)
 
@@ -447,36 +452,36 @@ contrast = 20
 brightness = 10
 #image.plot_image(contrast, brightness)
 
-ffdeg = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over) #55
+fofdeg = image.plot_3_areas(x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over, angle) #45
 
 #%%
 #PI = np.pi
 
 ## Data path
-measurment_name = 'GaAs3_2'
-what_measurement = 3
+measurment_name = 'GaAs3_3_right'
+what_measurement = 4
 
 image_path = list_image_path(measurment_name, what_measurement)
 image = MEL_9000_k_images(image_path)
 
 
 
-middle = (-0.22, -0.07)
+middle = (-0.26, -0.06)
 # GaAs1_4_image.plot_image()
 size = 1
 
 y_pos = 100e-4
-x_pos = 200e-4
+x_pos = 10e-4
 y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
+y_pos_top = 7700e-4
+y_pos_bottom = -6850e-4
 
 
 integrate_over = 30
 n = 1
-angle = 55
+angle = 50
 angle_rad = angle*PI/180
-image.rotate_image(-90.5)
+image.rotate_image(-90.3)
 image.remove_background(0)
 image.set_image_bounds(middle, size)
 
@@ -485,44 +490,13 @@ contrast = 20
 brightness = 10
 #image.plot_image(contrast, brightness)
 
-ffdeg_v2 = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over) #55, v2
+fzdeg = image.plot_3_areas(x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over, angle) #50
 
 #%%
 #PI = np.pi
 
 ## Data path
-measurment_name = 'GaAs3_1'
-what_measurement = 0
-
-image_path = list_image_path(measurment_name, what_measurement)
-image = MEL_9000_k_images(image_path)
-
-middle = (-0.05, -0.25)
-# GaAs1_4_image.plot_image()
-size = 1
-
-y_pos = 100e-4
-x_pos = 200e-4
-y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
-
-
-integrate_over = 30
-n = 1
-angle = 61
-angle_rad = angle*PI/180
-image.rotate_image(-2.5)
-image.remove_background(0)
-image.set_image_bounds(middle, size)
-
-
-contrast = 20
-brightness = 10
-# image.plot_image(contrast, brightness)
-sodeg = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over) #61, från GaAs3_1
-#%%
-measurment_name = 'GaAs3_2'
+measurment_name = 'GaAs3_3_right'
 what_measurement = 5
 
 image_path = list_image_path(measurment_name, what_measurement)
@@ -530,34 +504,37 @@ image = MEL_9000_k_images(image_path)
 
 
 
-middle = (-0.25, -0.1)
+middle = (-0.34, -0.06)
 # GaAs1_4_image.plot_image()
 size = 1
 
 y_pos = 100e-4
-x_pos = 200e-4
+x_pos = 10e-4
 y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
+y_pos_top = 8200e-4
+y_pos_bottom = -8400e-4
 
 
 integrate_over = 30
 n = 1
-angle = 65
+angle = 55
 angle_rad = angle*PI/180
-image.rotate_image(-85)
+image.rotate_image(-90.3)
 image.remove_background(0)
 image.set_image_bounds(middle, size)
 
 
 contrast = 20
 brightness = 10
-sfdeg = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over) #65
-# 
-#image.plot_3_areas(x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over)
+#image.plot_image(contrast, brightness)
+
+ffdeg =  image.plot_3_areas(x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over, angle) #55
 
 #%%
-measurment_name = 'GaAs3_2'
+#PI = np.pi
+
+## Data path
+measurment_name = 'GaAs3_3_right'
 what_measurement = 6
 
 image_path = list_image_path(measurment_name, what_measurement)
@@ -565,32 +542,36 @@ image = MEL_9000_k_images(image_path)
 
 
 
-middle = (-0.25, -0.09)
+middle = (-0.25, -0.06)
 # GaAs1_4_image.plot_image()
 size = 1
 
 y_pos = 100e-4
-x_pos = 200e-4
+x_pos = 10e-4
 y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
+y_pos_top = 8750e-4
+y_pos_bottom = -8950e-4
 
 
 integrate_over = 30
 n = 1
-angle = 65
+angle = 61
 angle_rad = angle*PI/180
-image.rotate_image(-87)
+image.rotate_image(-90.3)
 image.remove_background(0)
 image.set_image_bounds(middle, size)
 
 
 contrast = 20
 brightness = 10
-sfdeg_v2 = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over) #65 v2
+#image.plot_image(contrast, brightness)
 
+sodeg = image.plot_3_areas(x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over, angle) #61
 #%%
-measurment_name = 'GaAs3_2'
+#PI = np.pi
+
+## Data path
+measurment_name = 'GaAs3_3_right'
 what_measurement = 7
 
 image_path = list_image_path(measurment_name, what_measurement)
@@ -598,32 +579,37 @@ image = MEL_9000_k_images(image_path)
 
 
 
-middle = (0.2, -0.01)
+middle = (-0.19, -0.06)
 # GaAs1_4_image.plot_image()
 size = 1
 
 y_pos = 100e-4
-x_pos = 200e-4
-y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
+x_pos = 10e-4
+y_pos_mid = -1e-4
+y_pos_top = 9050e-4
+y_pos_bottom = -9200e-4
 
 
 integrate_over = 30
 n = 1
-angle = 70
+angle = 65
 angle_rad = angle*PI/180
-image.rotate_image(-276)
+image.rotate_image(-90.3)
 image.remove_background(0)
 image.set_image_bounds(middle, size)
 
 
 contrast = 20
 brightness = 10
-sezdeg = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over) #70
+#image.plot_image(contrast, brightness)
+
+sfdeg = image.plot_3_areas(x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over, angle) #65
 
 #%%
-measurment_name = 'GaAs3_2'
+#PI = np.pi
+
+## Data path
+measurment_name = 'GaAs3_3_right'
 what_measurement = 8
 
 image_path = list_image_path(measurment_name, what_measurement)
@@ -631,44 +617,46 @@ image = MEL_9000_k_images(image_path)
 
 
 
-middle = (-0.25, -0.09)
+middle = (-0.35, -0.06)
 # GaAs1_4_image.plot_image()
 size = 1
 
 y_pos = 100e-4
-x_pos = 200e-4
-y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
+x_pos = 10e-4
+y_pos_mid = 10e-4
+y_pos_top = 9300e-4
+y_pos_bottom = -9250e-4
 
 
-integrate_over = 30
+integrate_over =30
 n = 1
 angle = 70
 angle_rad = angle*PI/180
-image.rotate_image(-90)
+image.rotate_image(-90.3)
 image.remove_background(0)
 image.set_image_bounds(middle, size)
 
 
 contrast = 20
 brightness = 10
-sezdeg_v2 = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over) #70 v2 
+#image.plot_image(contrast, brightness)
 
+sezdeg = image.plot_3_areas(x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over, angle)  #70
 
 #%%
+
 plt.figure()
-plt.plot(fzdeg, label = r'$50^{\circ}$') #bäst 
-# plt.plot(fzdeg_v2, label = r'$50^{\circ}$ v2')
-#plt.plot(ffdeg, label = r'$55^{\circ}$')
-plt.plot(ffdeg_v2, label = r'$55^{\circ}$ v2') #bäst
+plt.plot(tfdeg, label = r'$35^{\circ}$')
+plt.plot(fozdeg, label = r'$40^{\circ}$')
+plt.plot(fofdeg, label = r'$45^{\circ}$')
+plt.plot(fzdeg, label = r'$50^{\circ}$')
+plt.plot(ffdeg, label = r'$55^{\circ}$')
 plt.plot(sodeg, label = r'$61^{\circ}$')
-plt.plot(sfdeg, label = r'$65^{\circ}$') #bäst
-# plt.plot(sfdeg_v2, label = r'$65^{\circ}$ v2')
-# plt.plot(sezdeg, label = r'$70^{\circ}$')
-plt.plot(sezdeg_v2, label = r'$70^{\circ}$ v2') #bäst
+plt.plot(sfdeg, label = r'$65^{\circ}$')
+plt.plot(sezdeg, label = r'$70^{\circ}$')
 plt.grid(linewidth=1, alpha=0.3)
 plt.xlabel(r'$k_x/k$', fontsize=12)
 plt.ylabel(r'Counts [-]', fontsize=12)
 plt.legend() 
 plt.title(r'Integrated cross-section', fontsize=12)
+plt.savefig(mypath/'GaAs3_3_crossection_35-70deg.png', dpi=600, format='png')
