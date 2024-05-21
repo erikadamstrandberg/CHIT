@@ -147,7 +147,9 @@ for i, path in enumerate(paths):
        
 
 h_meta = final_h_meta
-extent = np.array([radius.min(), radius.max(), h_meta.min(), h_meta.max()])
+# extent = np.array([radius.min(), radius.max(), h_meta.min(), h_meta.max()])
+extent = np.array([radius.min(), 80, 120, 500])
+
 
 dr = 0.01
 r_inter = np.arange(unique_radius.min(), unique_radius.max(), dr)
@@ -161,27 +163,30 @@ for i in range(phi_t.shape[0]):
     phi_t_inter[i, :] = f_phi(r_inter)
     transmission_inter[i, :] = f_t(r_inter)
 
-phi_t = phi_t_inter
-transmission = transmission_inter
+# phi_t = phi_t_inter
+# transmission = transmission_inter
 
 ## -------------------------- Select data for plotting -------------------------- ##
 
-experimental_radius = r_fit
-experimental_heigth = quadratic_fit_curve 
+# experimental_radius = r_fit
+# experimental_heigth = quadratic_fit_curve 
+
+# experimental_radius = np.arange(100, 80, 5)
+# experimental_heigth = np.ones(len(experimental_radius))*90 
 
 
-phi_cut = np.zeros(len(experimental_radius))
-t_cut   = np.zeros(len(experimental_radius))
+# phi_cut = np.zeros(len(experimental_radius))
+# t_cut   = np.zeros(len(experimental_radius))
 
-for i in range(len(experimental_radius)):
-    r_current = experimental_radius[i]
-    h_current = experimental_heigth[i]
+# for i in range(len(experimental_radius)):
+#     r_current = experimental_radius[i]
+#     h_current = experimental_heigth[i]
     
-    r_index = np.argmin(np.abs(r_current - r_inter))
-    h_index = np.argmin(np.abs(h_current - h_meta))
+#     r_index = np.argmin(np.abs(r_current - r_inter))
+#     h_index = np.argmin(np.abs(h_current - h_meta))
     
-    phi_cut[i] = phi_t[h_index, r_index]
-    t_cut[i] = transmission[h_index, r_index]
+#     phi_cut[i] = phi_t[h_index, r_index]
+#     t_cut[i] = transmission[h_index, r_index]
 
 
 
@@ -194,30 +199,41 @@ ax_list = [ax1, ax2, ax3, ax4]
 
 ## Figure 00 Phase map
 ax1.imshow(phi_t, origin='lower', extent=extent, aspect='auto', cmap='Blues', interpolation='None')
-ax1.plot(experimental_radius, experimental_heigth, 'black')
+# ax1.plot(experimental_radius, experimental_heigth, 'black')
 ax1.set_xlabel(r'r [nm]', fontsize=fontsize_axis)
 ax1.set_ylabel(r'h [nm]', fontsize=fontsize_axis)
 ax1.set_title(r'Phase Map', fontsize=fontsize_title)
 
 ## Figure 01 Transmission map 
 ax2.imshow(transmission, origin='lower', extent=extent, aspect='auto', cmap='plasma', interpolation='None')
-ax2.plot(experimental_radius, experimental_heigth, 'black')
+# ax2.plot(experimental_radius, experimental_heigth, 'black')
 ax2.set_xlabel(r'r [nm]', fontsize=fontsize_axis)
 ax2.set_ylabel(r'h [nm]', fontsize=fontsize_axis)
 ax2.set_title(r'Transmission Map', fontsize=fontsize_title)
 
 ## Figure 10 Choosen phi cut
-ax3.plot(experimental_radius, phi_cut, 'red')
+# ax3.plot(experimental_radius, phi_cut, 'red')
 ax3.grid(linewidth=1, alpha=0.3)
 ax3.set_xlabel(r'r [nm]', fontsize=fontsize_axis)
 ax3.set_ylabel(r'$\phi$ [rad]', fontsize=fontsize_axis)
 # ax3.set_title(r'Phase r: ' + str(round(unique_radius[min_index_r])) + ' - ' + str(round(unique_radius[max_index_r])) + ' nm h: ' + str(round(unique_h_meta[index_height])) + ' nm', fontsize=fontsize_title)
 
 ## Figure 11 Choosen transmission cut
-ax4.plot(experimental_radius, t_cut, 'black')
+# ax4.plot(experimental_radius, t_cut, 'black')
 ax4.grid(linewidth=1, alpha=0.3)
 ax4.set_xlabel(r'r [nm]', fontsize=fontsize_axis)
 ax4.set_ylabel(r'Transmission [-]', fontsize=fontsize_axis)
 # ax4.set_title(r'Transmission r: ' + str(round(unique_radius[min_index_r])) + ' - ' + str(round(unique_radius[max_index_r])) + ' nm h: ' + str(round(unique_h_meta[index_height])) + ' nm', fontsize=fontsize_title)
 
 plt.tight_layout(pad=outer_pad, w_pad=width_pad,  h_pad=height_pad)
+
+#%%
+
+etch_depth = np.array([100, 200, 260, 310, 350, 400, 420])
+etch_cycles = np.array([10, 15, 20, 25, 30, 35, 40])
+
+plt.plot(etch_cycles, etch_depth, 'x', color='red')
+plt.xlabel(r'Etch cycles')
+plt.ylabel(r'Etch depth [nm]')
+plt.grid(True)
+

@@ -81,7 +81,12 @@ comsol_g3    = np.array(comsol_dataframe['g3'])
 comsol_g4    = np.array(comsol_dataframe['g4'])
 
 ### Set size of meta surface 
-L   = 20*UM
+# L   = 1600*UM
+# L_real = 100*UM
+
+L   = 2000*UM
+L_real = 150*UM
+
 
 ### Pd does not really matter since it will be reshaped!
 Pd  = 240*NM
@@ -103,9 +108,10 @@ R    = np.sqrt(X**2 + Y**2)
 ### Parameters for generated lens
 n = 1
 lam0 = 984*NM
-anglex = -55*DEG_TO_RAD
+anglex = -40*DEG_TO_RAD
 angley = 0*DEG_TO_RAD
-f      = 1000*UM
+f      = 600*UM
+r_offset = -f*np.sin(np.abs(anglex))
 
 (gradient_to_angle_look_up, dphase_array) = gradient_to_angle(X, Y, n, lam0, Nnd)
 
@@ -127,14 +133,15 @@ plot_phase_map = False
 if plot_phase_map:
     fig     = plt.figure(figsize=(10,8))
     ax1     = fig.add_subplot(121)
-    ax1.imshow(np.mod(phase_map_for_gen, 2*np.pi))
+    extent = [x_um.min(), x_um.max(), y_um.min(), y_um.max()]
+    ax1.imshow(np.mod(phase_map_for_gen, 2*np.pi), extent=extent)
     ax2     = fig.add_subplot(122)
     plt.plot(cs_phase_map)
     print('Needed angles: ' + str(x_angle_design_unique))
     
+
 ### Find the Fresnel regions 
 fresnel_regions = {}
-x_reshaped = np.zeros(1)
 for i, x_angle in enumerate(x_angle_design):
     
     comsol_index = np.argmin(np.abs(comsol_angle - x_angle))
@@ -151,8 +158,8 @@ for i, x_angle in enumerate(x_angle_design):
     
     
     number_supercells = np.abs(region.max() - region.min())
-    fresnel_regions[x_angle] =  {'from' : np.round(region.min(), 3),
-                                 'to' : np.round(region.max(), 3),
+    fresnel_regions[x_angle] =  {'from' : np.round(region.min(), 3) - r_offset,
+                                 'to' : np.round(region.max(), 3) - r_offset,
                                  'Pd' : np.round(Pd, 3), 
                                  'number' : number_supercells,
                                  'anglex' : x_angle,
@@ -161,50 +168,60 @@ for i, x_angle in enumerate(x_angle_design):
                                  'g3' : g3,
                                  'g4' : g4,
                                  'r'  : r}
+
     
-### Reshape the x-sampling
-for i, key in enumerate(fresnel_regions.keys()):
-    region_from = fresnel_regions[key]['from']
-    region_to   = fresnel_regions[key]['to']
-    if int(np.floor(fresnel_regions[key]['number'])) == 0:
-        region_num = 1
-    else:
-        region_num  = int(np.floor(fresnel_regions[key]['number']))
-    region_pd   = fresnel_regions[key]['Pd']
-    angle       = fresnel_regions[key]['anglex']
-
-    if i == 0:
-        x_reshaped_initial = np.zeros(region_num)
+def create_cut_comp(angle, r, g1, g2, g3, g4, radius, width, pnd, radius_ms, layer_dict):
+    bool_c = gf.Component('bool')
         
-        for i in range(region_num):
-            x_reshaped_initial[i] = region_from + i*region_pd
-        
-        angle_reshape_initial = np.ones(len(x_reshaped_initial))*angle
-        
-        x_reshaped    = x_reshaped_initial
-        angle_reshape = angle_reshape_initial
-
-        next_start = x_reshaped_initial[-1]
-        last_region_pd = region_pd
-        
-    else:
-        next_start = next_start + last_region_pd 
-        x_reshaped_initial = np.zeros(region_num)
-        
-        for i in range(region_num):
-            x_reshaped_initial[i] = next_start + i*region_pd
-        
-        angle_reshape_initial = np.ones(len(x_reshaped_initial))*angle
-        
-        x_reshaped = np.concatenate((x_reshaped, x_reshaped_initial))
-        angle_reshape = np.concatenate((angle_reshape, angle_reshape_initial))
+    supercell_ring_c = gf.components.ring(radius=radius, width=width, layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+    supercell_ring_r = bool_c << supercell_ring_c
     
-        next_start = x_reshaped_initial[-1]
-        last_region_pd = region_pd
-
-
-X_reshaped, Y_reshaped = np.meshgrid(x_reshaped, y)
-R_reshaped             = np.sqrt(X_reshaped**2 + Y_reshaped**2)
+    supercell_bool_bot_c = gf.components.rectangle((2*radius_ms, 2*radius_ms),  layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']), centered=True)
+    supercell_bool_bot_r = bool_c << supercell_bool_bot_c
+    supercell_bool_bot_r.translate(0, -radius_ms).rotate(-180 + angle, (0,0))
+    
+    supercell_cut_c = gf.geometry.boolean(supercell_ring_r, supercell_bool_bot_r, operation='and', precision=1e-6, layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+    
+    supercell_bool_bot_rot_r = bool_c << supercell_bool_bot_c
+    supercell_bool_bot_rot_r.translate(0, -radius_ms).rotate(-angle, (0,0))
+    
+    supercell_cut_c = gf.geometry.boolean(supercell_cut_c, supercell_bool_bot_rot_r, operation='and', precision=1e-6, layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+    
+    circle_cut_c = gf.components.circle(radius=r, layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+    left_corner = -radius - width/2 + r
+    
+    if np.isnan(g4):
+        circle_cut_r_g1 = bool_c << circle_cut_c
+        circle_cut_r_g1.translate(left_corner + g1, 0)
+        supercell_cut_c = gf.geometry.boolean(supercell_cut_c, circle_cut_r_g1, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+        
+        circle_cut_r_g2 = bool_c << circle_cut_c
+        circle_cut_r_g2.translate(left_corner + g2, 0)
+        supercell_cut_c = gf.geometry.boolean(supercell_cut_c, circle_cut_r_g2, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+        
+        circle_cut_r_g3 = bool_c << circle_cut_c
+        circle_cut_r_g3.translate(left_corner + g3, 0)
+        supercell_cut_c = gf.geometry.boolean(supercell_cut_c, circle_cut_r_g3, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+        
+    else:
+        circle_cut_r_g1 = bool_c << circle_cut_c
+        circle_cut_r_g1.translate(left_corner + g1, 0)
+        supercell_cut_c = gf.geometry.boolean(supercell_cut_c, circle_cut_r_g1, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+        
+        circle_cut_r_g2 = bool_c << circle_cut_c
+        circle_cut_r_g2.translate(left_corner + g2, 0)
+        supercell_cut_c = gf.geometry.boolean(supercell_cut_c, circle_cut_r_g2, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+        
+        circle_cut_r_g3 = bool_c << circle_cut_c
+        circle_cut_r_g3.translate(left_corner + g3, 0)
+        supercell_cut_c = gf.geometry.boolean(supercell_cut_c, circle_cut_r_g3, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+        
+        circle_cut_r_g4 = bool_c << circle_cut_c
+        circle_cut_r_g4.translate(left_corner + g4, 0)
+        supercell_cut_c = gf.geometry.boolean(supercell_cut_c, circle_cut_r_g4, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
+        
+    
+    return supercell_cut_c
 
 ### ------------------------ Start creating mask ------------------------ ###
 save_folder_path = create_save_folder()
@@ -217,7 +234,8 @@ component_dict = {}
 key = 'ms'
 top = gf.Component('TOP') 
 
-for anglex in fresnel_regions.keys():
+end_radius_diff = 0
+for k, anglex in enumerate(fresnel_regions.keys()):
     bool_c = gf.Component('bool')
     
     Pd     = fresnel_regions[anglex]['Pd']
@@ -226,74 +244,52 @@ for anglex in fresnel_regions.keys():
     g3     = fresnel_regions[anglex]['g3']
     g4     = fresnel_regions[anglex]['g4']
     r      = fresnel_regions[anglex]['r']
+    region_to = fresnel_regions[anglex]['to']
     region_from = fresnel_regions[anglex]['from']
-    region_to     = fresnel_regions[anglex]['to']
     
-    region_width   = (region_to - region_from)/2 
-    region_radius  = (region_to + region_from)/2
-
-    # supercell_c  = gf.components.rectangle((Pd, Pnd), layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-    # supercell_r  = bool_c << supercell_c
+    region_width   = np.abs(region_to - region_from)
+    region_radius  = np.abs((region_to + region_from))/2
+    region_radius_end = (region_to + region_from)/2
+    region_radius_circ = np.pi*region_radius
     
-    supercell_ring_c = gf.components.ring(radius=region_radius, width=region_width, layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-    supercell_ring_r = top << supercell_ring_c
+    if k == 0:
+        start_from = region_from
+        
+    if k > 0:
+        start_from = region_from + end_radius_diff - 0.24
+
+    angle_RAD = 2*np.arcsin(Pnd/(2*np.abs(region_to)))
+    angle_DEG = angle_RAD*RAD_TO_DEG
     
-    # if np.isnan(g4):
-    #     circle_cut_c = gf.components.circle(radius=r, layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-        
-    #     circle_cut_r_g1 = bool_c << circle_cut_c
-    #     circle_cut_r_g1.translate(g1 + r, Pnd/2)
-    #     supercell_bool = gf.geometry.boolean(supercell_r, circle_cut_r_g1, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-        
-    #     circle_cut_r_g2 = bool_c << circle_cut_c
-    #     circle_cut_r_g2.translate(g2 + r, Pnd/2)
-    #     supercell_bool = gf.geometry.boolean(supercell_bool, circle_cut_r_g2, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-        
-    #     circle_cut_r_g3 = bool_c << circle_cut_c
-    #     circle_cut_r_g3.translate(g3 + r, Pnd/2)
-    #     supercell_bool = gf.geometry.boolean(supercell_bool, circle_cut_r_g3, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-        
-    #     fresnel_regions[anglex].update({'comp' : supercell_bool})
-    # else:
-    #     circle_cut_c = gf.components.circle(radius=r, layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-        
-    #     circle_cut_r_g1 = bool_c << circle_cut_c
-    #     circle_cut_r_g1.translate(g1 + r, Pnd/2)
-    #     supercell_bool = gf.geometry.boolean(supercell_r, circle_cut_r_g1, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-        
-    #     circle_cut_r_g2 = bool_c << circle_cut_c
-    #     circle_cut_r_g2.translate(g2 + r, Pnd/2)
-    #     supercell_bool = gf.geometry.boolean(supercell_bool, circle_cut_r_g2, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-        
-    #     circle_cut_r_g3 = bool_c << circle_cut_c
-    #     circle_cut_r_g3.translate(g3 + r, Pnd/2)
-    #     supercell_bool = gf.geometry.boolean(supercell_bool, circle_cut_r_g3, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-
-    #     circle_cut_r_g4 = bool_c << circle_cut_c
-    #     circle_cut_r_g4.translate(g4 + r, Pnd/2)
-    #     supercell_bool = gf.geometry.boolean(supercell_bool, circle_cut_r_g4, 'not', layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
-        
-    #     fresnel_regions[anglex].update({'comp' : supercell_bool})
-        
-        
-
-# print('-----------------------------------')
-# print('Generating cylindrical lens with:')
-# for key in fresnel_regions.keys():
-#     print('Angle: ' + str(key) + ' with: ' + str(np.ceil(fresnel_regions[key]['number'])) + ' superunitcells')
+    number_cell_r = region_width/Pd
+    number_cell_theta = 360/angle_DEG
+    number_cells_added = int(number_cell_theta)
+    
+    angles_missed = angle_RAD/(number_cell_theta - number_cells_added)
+    angles_to_add = angles_missed/(2*number_cells_added)
+    
+    angle_RAD = angle_RAD + angles_to_add
+    angle_DEG = angle_RAD*RAD_TO_DEG
+    
+    for i in range(int(number_cell_r)):
+        current_radius = start_from + i*Pd + Pd/2
+        current_width  = Pd
+    
+        super_cell = create_cut_comp(angle_DEG/2, r, g1, g2, g3, g4, np.abs(current_radius), current_width, Pnd, L, layer_dict)
+    
+        for j in range(number_cells_added):
+            current_x = r_offset - current_radius*np.cos(angle_RAD*j)
+            current_y = current_radius*np.sin(angle_RAD*j)
+            current_r = np.sqrt(current_x**2 + current_y**2)
             
-       
-# for i in range(len(x_reshaped)):
-#     if i%10 == 0:
-#         print('Placing row: ' + str(i) + ' of ' + str(len(x_reshaped)))
+            if current_r < L_real and current_x < L_real:
+                print('Added' + ' with angle: ' + str(anglex))
+                super_cell_r = top << super_cell
+                super_cell_r.rotate(np.pi*RAD_TO_DEG + angle_DEG*j, (0, 0)).translate(-r_offset, 0)
     
-#     angle_current_x = angle_reshape[i]
-#     current_comp = fresnel_regions[angle_current_x]['comp']
+    end_radius_diff = current_radius - region_to + Pd/2
     
-#     for j in range(len(y)):
-#         if R_reshaped[j, i] < L/2:
-#             c_outer_r = top << current_comp
-#             c_outer_r.translate(x_reshaped[i], y[j])
+print('Angles used: ' + str(x_angle_design_unique))
       
 save_path = Path(save_folder_path, ms_name)
 top.write_gds(str(save_path) + '.gds')

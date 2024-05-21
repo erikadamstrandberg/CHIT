@@ -123,7 +123,7 @@ for i in range(len(dphase)):
     
 x_angle_design_unique = np.unique(x_angle_design)
 
-plot_phase_map = False
+plot_phase_map = True
 if plot_phase_map:
     fig     = plt.figure(figsize=(10,8))
     ax1     = fig.add_subplot(121)
