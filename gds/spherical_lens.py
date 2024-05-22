@@ -84,8 +84,8 @@ comsol_g4    = np.array(comsol_dataframe['g4'])
 # L   = 1600*UM
 # L_real = 100*UM
 
-L   = 2000*UM
-L_real = 250*UM #radie
+L   = 600*UM
+L_real = 20*UM #radie
 
 
 ### Pd does not really matter since it will be reshaped!
@@ -108,8 +108,8 @@ R    = np.sqrt(X**2 + Y**2)
 ### Parameters for generated lens
 n        = 1
 lam0     = 984*NM
-anglex   = -60*DEG_TO_RAD
-angley   = 0*DEG_TO_RAD
+anglex   = -40*DEG_TO_RAD
+angley   = 0
 f        = 600*UM
 r_offset = -f*np.tan(np.abs(anglex))
 
@@ -138,7 +138,6 @@ if plot_phase_map:
     ax2     = fig.add_subplot(122)
     plt.plot(cs_phase_map)
     print('Needed angles: ' + str(x_angle_design_unique))
-    
 
 ### Find the Fresnel regions 
 fresnel_regions = {}
@@ -178,7 +177,7 @@ def create_cut_comp(angle, r, g1, g2, g3, g4, radius, width, pnd, radius_ms, lay
     
     supercell_bool_bot_c = gf.components.rectangle((2*radius_ms, 2*radius_ms),  layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']), centered=True)
     supercell_bool_bot_r = bool_c << supercell_bool_bot_c
-    supercell_bool_bot_r.translate(0, -radius_ms).rotate(-180 + angle, (0,0))
+    supercell_bool_bot_r.translate(0, radius_ms).rotate(angle, (0,0))
     
     supercell_cut_c = gf.geometry.boolean(supercell_ring_r, supercell_bool_bot_r, operation='and', precision=1e-6, layer=(layer_dict[key]['layer'], layer_dict[key]['datatype']))
     
@@ -266,10 +265,10 @@ for k, anglex in enumerate(fresnel_regions.keys()):
     number_cell_theta = 360/angle_DEG
     number_cells_added = int(number_cell_theta)
     
-    angles_missed = angle_RAD/(number_cell_theta - number_cells_added)
-    angles_to_add = angles_missed/(2*number_cells_added)
-    
-    angle_RAD = angle_RAD + angles_to_add
+    angles_missed = angle_RAD/np.abs((number_cell_theta - number_cells_added))
+    angles_to_add = angles_missed/number_cells_added
+
+    angle_RAD = angle_RAD + angles_to_add*60
     angle_DEG = angle_RAD*RAD_TO_DEG
     
     for i in range(int(number_cell_r)):

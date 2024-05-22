@@ -81,8 +81,8 @@ comsol_g3    = np.array(comsol_dataframe['g3'])
 comsol_g4    = np.array(comsol_dataframe['g4'])
 
 ### Set size of meta surface 
-L   = 500*UM
-#L = 40*UM
+# L   = 500*UM
+L = 40*UM
 
 ### Pd does not really matter since it will be reshaped!
 Pd  = 50*NM
@@ -104,8 +104,7 @@ R    = np.sqrt(X**2 + Y**2)
 ### Parameters for generated lens
 n = 1
 lam0 = 984*NM
-anglex = -70*DEG_TO_RAD
-#anglex = 0
+anglex = -60*DEG_TO_RAD
 angley = 0
 f      = 800*UM
 
@@ -114,7 +113,7 @@ phase_map = deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angl
 
 phase_map_for_gen = deflecting_cylindrical_lens_gradient_map(X_for_gen, Y_for_gen, n, lam0, anglex, angley, f)
 cs_phase_map = phase_map_for_gen[Nnd//2, :]
-dphase = np.diff(cs_phase_map)
+dphase = np.flip(np.diff(cs_phase_map))
 
 ### Generate the needed dphase for needed angles
 x_angle_design = np.zeros(len(x))
@@ -122,7 +121,6 @@ for i in range(len(dphase)):
     current_dphase = dphase[i]
     current_index = np.argmin(np.abs(current_dphase - dphase_array))
     x_angle_design[i] = gradient_to_angle_look_up[current_index]['anglex']
-    
     
 x_angle_design_unique = np.unique(x_angle_design)
 
@@ -135,7 +133,6 @@ if plot_phase_map:
     plt.plot(cs_phase_map)
     print('Needed angles: ' + str(x_angle_design_unique))
     
-
 ### Find the Fresnel regions 
 fresnel_regions = {}
 x_reshaped = np.zeros(1)
