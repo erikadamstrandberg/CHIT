@@ -84,8 +84,8 @@ comsol_g4    = np.array(comsol_dataframe['g4'])
 # L   = 1600*UM
 # L_real = 100*UM
 
-L   = 600*UM
-L_real = 20*UM #radie
+L   = 1600*UM
+L_real = 200*UM #radie
 
 
 ### Pd does not really matter since it will be reshaped!
@@ -108,10 +108,12 @@ R    = np.sqrt(X**2 + Y**2)
 ### Parameters for generated lens
 n        = 1
 lam0     = 984*NM
-anglex   = -40*DEG_TO_RAD
+anglex   = -61*DEG_TO_RAD #65 #TESTA 61 och 65
 angley   = 0
 f        = 600*UM
 r_offset = -f*np.tan(np.abs(anglex))
+
+scale_factor = 1 #1.05 #TESTA 1 och 1.05
 
 (gradient_to_angle_look_up, dphase_array) = gradient_to_angle(X, Y, n, lam0, Nnd)
 
@@ -152,7 +154,7 @@ for i, x_angle in enumerate(x_angle_design):
     g2     = comsol_g2[comsol_index]*NM
     g3     = comsol_g3[comsol_index]*NM
     g4     = comsol_g4[comsol_index]*NM
-    r      = comsol_r[comsol_index]*NM
+    r      = comsol_r[comsol_index]*1.05*NM
     region = x[np.where(x_angle_design == x_angle)]
     
     
@@ -224,7 +226,7 @@ def create_cut_comp(angle, r, g1, g2, g3, g4, radius, width, pnd, radius_ms, lay
 
 ### ------------------------ Start creating mask ------------------------ ###
 save_folder_path = create_save_folder()
-ms_name = 'spherical_lens_60'
+ms_name = 'spherical_lens_40'
 
 layer_dict = {'ms'     : {'layer': 1, 'datatype' : 0},
               'labels' : {'layer': 2, 'datatype' : 1}}
