@@ -56,8 +56,11 @@ NM = 1e-9
 #     return 2*PI - (2*PI*n/lam0)*np.sqrt(X**2 + f**2 - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
 # ### Get deflecting cylindrical lens gradient phase map
 
-def deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f):
+#def deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f):
     return 2*PI - (2*PI*n/lam0)*(np.sqrt(X**2 + f**2) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
+
+def deflecting_spherical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f):
+    return 2*PI - (2*PI*n/lam0)*(np.sqrt(X**2 + Y**2 + f**2) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
 
 def plot_focused_beam(E_incident, n, NA_objective, ax, ay, Nx, Ny, X, Y, anglex, angley, f):
     
@@ -76,7 +79,7 @@ def plot_focused_beam(E_incident, n, NA_objective, ax, ay, Nx, Ny, X, Y, anglex,
     kx_beam = NA_beam*np.cos(theta)
     ky_beam = NA_beam*np.sin(theta)
     
-    T_deflecting_lens = np.exp(1j*deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f))
+    T_deflecting_lens = np.exp(1j*deflecting_spherical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f))
     
     E_k = fft2c(E_incident*T_deflecting_lens)
     I_k = np.abs(E_k)**2

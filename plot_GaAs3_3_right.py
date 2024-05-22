@@ -217,7 +217,7 @@ class MEL_9000_k_images():
         
         plt.tight_layout(pad=outer_pad, w_pad=width_pad, h_pad=height_pad)
         
-        return x_cs_integrated
+        return x_cs_integrated/max(x_cs_integrated)
         
 
     def plot_3_areas(self, x_pos, y_pos_mid, y_pos_top, y_pos_bottom, integrate_over):
@@ -650,8 +650,11 @@ plt.plot(sodeg, label = r'$61^{\circ}$')
 plt.plot(sfdeg, label = r'$65^{\circ}$')
 plt.plot(sezdeg, label = r'$70^{\circ}$')
 plt.grid(linewidth=1, alpha=0.3)
-plt.xlabel(r'$k_x/k$', fontsize=12)
-plt.ylabel(r'Counts [-]', fontsize=12)
-plt.legend() 
-plt.title(r'Integrated cross-section', fontsize=12)
+plt.xlabel(r'$k_x/k$', fontsize=15)
+plt.ylabel(r'Counts [-]', fontsize=15)
+plt.legend(fontsize=15) 
+plt.title(r'Integrated cross-section', fontsize=16)
+plt.yticks(fontsize = 15)
+plt.xticks(fontsize = 15)
+plt.tight_layout()
 plt.savefig(mypath/'GaAs3_3_crossection_35-70deg.png', dpi=600, format='png')

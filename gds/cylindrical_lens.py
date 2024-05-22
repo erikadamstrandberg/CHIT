@@ -81,8 +81,8 @@ comsol_g3    = np.array(comsol_dataframe['g3'])
 comsol_g4    = np.array(comsol_dataframe['g4'])
 
 ### Set size of meta surface 
-# L   = 500*UM
-L = 40*UM
+L   = 500*UM
+#L = 40*UM
 
 ### Pd does not really matter since it will be reshaped!
 Pd  = 50*NM
@@ -104,8 +104,8 @@ R    = np.sqrt(X**2 + Y**2)
 ### Parameters for generated lens
 n = 1
 lam0 = 984*NM
-# anglex = -60*DEG_TO_RAD
-anglex = 0
+anglex = -70*DEG_TO_RAD
+#anglex = 0
 angley = 0
 f      = 800*UM
 
@@ -135,7 +135,6 @@ if plot_phase_map:
     plt.plot(cs_phase_map)
     print('Needed angles: ' + str(x_angle_design_unique))
     
-    #%%
 
 ### Find the Fresnel regions 
 fresnel_regions = {}
@@ -213,7 +212,7 @@ R_reshaped             = np.sqrt(X_reshaped**2 + Y_reshaped**2)
 
 ### ------------------------ Start creating mask ------------------------ ###
 save_folder_path = create_save_folder()
-ms_name = 'cylindrical_lens_60'
+ms_name = 'cylindrical_lens_70'
 
 layer_dict = {'ms'     : {'layer': 1, 'datatype' : 0},
               'labels' : {'layer': 2, 'datatype' : 1}}
