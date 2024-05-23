@@ -57,7 +57,7 @@ NM = 1e-9
 # ### Get deflecting cylindrical lens gradient phase map
 
 #def deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f):
-    return 2*PI - (2*PI*n/lam0)*(np.sqrt(X**2 + f**2) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
+ #   return 2*PI - (2*PI*n/lam0)*(np.sqrt(X**2 + f**2) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
 
 def deflecting_spherical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f):
     return 2*PI - (2*PI*n/lam0)*(np.sqrt(X**2 + Y**2 + f**2) - f) + 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
@@ -112,9 +112,9 @@ def plot_focused_beam(E_incident, n, NA_objective, ax, ay, Nx, Ny, X, Y, anglex,
     plt.plot(kx_beam, ky_beam, '--', color='yellow', linewidth=0.5)
     plt.xlabel(r'$k_x/k$', fontsize=fontsize_axis)
     plt.ylabel(r'$k_y/k$', fontsize=fontsize_axis)
-    plt.title(r'PAS, cylindrical lens, 61 $^{\circ}$', fontsize=fontsize_title)
+    plt.title(r'PAS, spherical lens, 61 $^{\circ}$', fontsize=fontsize_title)
     plt.tight_layout()
-    plt.savefig(mypath/'PAS_cylindrical_61.png', dpi=600, format='png')
+    #plt.savefig(mypath/'PAS_cylindrical_61.png', dpi=600, format='png')
     
 
     
@@ -124,8 +124,8 @@ def plot_focused_beam(E_incident, n, NA_objective, ax, ay, Nx, Ny, X, Y, anglex,
 Lx = 1*MM
 Ly = 1*MM
 
-ax = 520*NM
-ay = 520*NM
+ax = 420*NM
+ay = 420*NM
 
 Nx = int(Lx/ax)
 Ny = int(Ly/ay)
@@ -141,13 +141,13 @@ R    = np.sqrt(X**2 + Y**2)
 # Setup loosly focused beam in measurement
 lam0        = 976*NM
 n_air       = 1
-omega0      = 30*UM
+omega0      = 100*UM
 offset_x    = 0
 offset_y    = 0
 
 NA_objective = 0.95
 
-anglex = 61*RAD
+anglex = 55*RAD
 angley = 0*RAD
 
 f = 800*UM

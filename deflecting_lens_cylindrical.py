@@ -121,8 +121,8 @@ def plot_focused_beam(E_incident, n, NA_objective, ax, ay, Nx, Ny, X, Y, anglex,
 Lx = 1*MM
 Ly = 1*MM
 
-ax = 520*NM
-ay = 520*NM
+ax = 500*NM
+ay = 500*NM
 
 Nx = int(Lx/ax)
 Ny = int(Ly/ay)
@@ -138,16 +138,16 @@ R    = np.sqrt(X**2 + Y**2)
 # Setup loosly focused beam in measurement
 lam0        = 976*NM
 n_air       = 1
-omega0      = 30*UM
+omega0      = 100*UM
 offset_x    = 0
 offset_y    = 0
 
 NA_objective = 0.95
 
-anglex = 61*RAD
+anglex = 65*RAD
 angley = 0*RAD
 
-f = 800*UM
+f = 1000*UM
 
 E_incident = np.exp(-((X - offset_x)**2 + (Y - offset_y)**2)/omega0**2)
 

@@ -114,16 +114,26 @@ def plot_three_diffractive_orders(E_incident, ax, ay, Nx, Ny, X, Y, anglex, eta=
     ax2.plot(kx_objective, ky_objective, color='black')
     ax2.plot(kx_beam, ky_beam, '--', color='red', linewidth=0.5)
     
-    fontsize_title  = 14
-    fontsize_axis   = 13
+    fontsize_title  = 16
+    fontsize_axis   = 15
+    
+    #print(I_k)
+    y_cs_integrated = np.sum(I_k, axis=0)[:-1]
+    # print(np.argmax(y_cs_integrated))
+    # print('-----------')
+    # print(kx[0:-1])
     
     plt.figure(2)
     plt.imshow(I_k, extent=extent_k, cmap='plasma')
     plt.plot(kx_objective, ky_objective, color='black')
-    plt.plot(kx_beam, ky_beam, '--', color='red', linewidth=0.5)
+    plt.plot(kx_beam, ky_beam, '--', color='yellow', linewidth=0.5)
+    plt.plot(kx[0:-1], 0.7*(y_cs_integrated/max(y_cs_integrated))-0.95, 'red')
     plt.xlabel(r'$k_x/k$', fontsize=fontsize_axis)
     plt.ylabel(r'$k_y/k$', fontsize=fontsize_axis)
     plt.title(r'PAS, 61 $^{\circ}$', fontsize=fontsize_title)
+    plt.yticks([-0.5, 0, 0.5], fontsize = fontsize_axis)
+    plt.xticks([-0.5, 0, 0.5], fontsize = fontsize_axis)
+    plt.tight_layout()
     plt.savefig(mypath/'PAS_61.png', dpi=600, format='png')
     
     
@@ -133,8 +143,8 @@ def plot_three_diffractive_orders(E_incident, ax, ay, Nx, Ny, X, Y, anglex, eta=
 Lx = 2*MM
 Ly = 2*MM
 
-ax = 520*NM
-ay = 520*NM
+ax = 500*NM
+ay = 500*NM
 
 Nx = int(Lx/ax)
 Ny = int(Ly/ay)
