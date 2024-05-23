@@ -333,118 +333,54 @@ def PAS(E1, L, N, a, lam0, n):
     return E2
 
 #%%
-
 ## UNITS (microns is ref)
 CM = 10000
 MM = 1000
 NM = 1e-3
 
-r = 99.84 #metasurface radie
-P = 260*NM #period
+r = 1000   # Metasurface radie
+P = 200*NM # Period
 
-x = np.arange(-r, r+P, P)
+x = np.arange(-r, r, P)
 xx, yy = np.meshgrid(x, x)
 
+N = 2*r/P
 
 n = 1
 lam0 = 973*NM
-f = 600
+f = 1000
 
-phi = (2*np.pi - (((2*np.pi*n)/lam0)*(np.sqrt(xx**2 + yy**2 + f**2)-f))) % (2*np.pi)
+L = f
+
+phi = (2*np.pi - (((2*np.pi*n)/lam0)*(np.sqrt(xx**2 + yy**2 + f**2) - f ))) % 2*np.pi
 
 R = np.sqrt(xx**2 + yy**2)
 omega1 = 44 #radius where the intenstiy falls to 1/e of orirignal value
 
 gauss = np.exp(-R**2/omega1**2)
 
-# phi_discrete_complex = np.zeros([len(phi_discrete[0,:]),len(phi_discrete[0,:])], dtype='complex_')
-# for i in range(len(phi[0,:])):
-#     for m in range(len(phi[:,0])):
-#         phi_discrete_complex [i,m] = np.exp(1j*phi_discrete[i,m])
-
-# #making each array 1025*1025, adding zeros to the edges of the array
-# phi_discrete_complex_large = np.pad(phi_discrete_complex, (1000,1000), 'constant', constant_values=(0,0))
-# gauss_large = np.pad(gauss, (1000,1000), 'constant', constant_values=(0,0))
-x_large = np.arange(-359.97, 359.97, P)
-
-#%%
-        
-
-#E1 = gauss*phi_discrete_complex
 E1 = gauss*phi #phi_discrete_complex_large
 I1 = np.abs(E1)**2
 phase_profile = np.angle(E1)
 
-plt.clf()
 
-# #intensitet gauss + lins plan 1
-# plt.figure(3)
-# plt.contourf(x, x, gauss)
-# plt.colorbar()
-# plt.show()
-
-#fas gauss + lins i plan 1
-plt.figure(4)
-plt.contourf(x, x, phi)
-plt.colorbar()
-plt.show()
-
-
-
-# #intensitet gauss + lins plan 1
-# plt.figure(5)
-# plt.contourf(x_large, x_large, np.abs(gauss_large)**2)
-# plt.colorbar()
-# plt.show()
-
-# #fas gauss + lins i plan 1
-# plt.figure(6)
-# plt.contourf(x_large, x_large, np.angle(gauss_large))
-# plt.colorbar()
-# plt.show()
-
-
-sample_points = len(E1)
-
-# N = 1024
-# sidl = 4*MM
-# b = sidl/N
-#%%
-L = 600
-
-E2 = PAS(E1, L, sample_points, P, lam0, n)         # Propagera med vår PAS funktion
+E2 = PAS(E1, L, N, P, lam0, n)         # Propagera med vår PAS funktion
 I2 = np.abs(E2)**2/np.max(np.abs(E2)**2)    # Intesitet i plan 2
-# E22 = PAS(gauss_large, f, sample_points, P, lam0, n)
-# I22 = np.abs(E22)**2
 
-E2_cs = E2[int(sample_points/2), :]
+E2_cs = E2[int(N/2), :]
 I2_cs = np.abs(E2_cs)**2/np.max( np.abs(E2_cs)**2)
 
 index = np.argmin(abs(I2_cs-1/np.exp(2)))
 print(x[index])
 
-plt.figure(5)
-plt.contourf(x, x, I2)
-plt.colorbar()
-plt.show()
+
+#%%
 
 plt.figure(6)
 plt.plot(x, I2_cs)
-plt.colorbar()
 plt.show()
 
-# plt.figure(6)
-# plt.contourf(x_large, x_large, np.angle(E2))
-# plt.colorbar()
-# plt.show()
+#%%
 
-# plt.figure(7)
-# plt.contourf(x_large, x_large, I22)
-# plt.colorbar()
-# plt.show()
-
-# plt.figure(8)
-# plt.contourf(x_large, x_large, np.angle(E22))
-# plt.colorbar()
-# plt.show()
-
+plt.figure(7)
+plt.imshow(I2)

@@ -80,46 +80,47 @@ comsol_g2    = np.array(comsol_dataframe['g2'])
 comsol_g3    = np.array(comsol_dataframe['g3'])
 comsol_g4    = np.array(comsol_dataframe['g4'])
 
+### Important parameters
+focal_plane = 600*UM
+anglex      = -60*DEG_TO_RAD
+
+### Fab correction
+r_scale_factor = 1
+
+### Parameters for generated lens
+n            = 1
+lam0         = 984*NM
+angley       = 0
+f            = focal_plane/np.cos(np.abs(anglex))
+r_offset     = -f*np.sin(np.abs(anglex))
+
+
 ### Set size of meta surface 
-# L   = 1600*UM
-# L_real = 100*UM
+ms_diameter    = 220*UM
 
-L   = 1600*UM
-L_real = 200*UM #radie
-
+### This is calculated for you
+ms_radius      = ms_diameter/2
+phase_map_size = ms_radius - r_offset
 
 ### Pd does not really matter since it will be reshaped!
 Pd  = 240*NM
-Pnd = 240*NM
-Nd  = int(L/Pd)
-Nnd = int(L/Pnd)
+Pnd = 245*NM
+Nd  = int(phase_map_size/Pd)
+Nnd = int(phase_map_size/Pnd)
 
 x = np.arange(-(Nd/2)*Pd, (Nd/2)*Pd, Pd)
-x_for_gen = np.arange(-(Nd/2)*Pd, (Nd/2 + 1)*Pd, Pd)
 y = np.arange(-(Nnd/2)*Pnd, (Nnd/2)*Pnd, Pnd)
 
 x_um = x/UM
 y_um = y/UM
 
 X, Y = np.meshgrid(x, y)
-X_for_gen, Y_for_gen = np.meshgrid(x_for_gen, y)
 R    = np.sqrt(X**2 + Y**2)
 
-### Parameters for generated lens
-n        = 1
-lam0     = 984*NM
-anglex   = -61*DEG_TO_RAD #65 #TESTA 61 och 65
-angley   = 0
-f        = 600*UM
-r_offset = -f*np.tan(np.abs(anglex))
-
-scale_factor = 1 #1.05 #TESTA 1 och 1.05
 
 (gradient_to_angle_look_up, dphase_array) = gradient_to_angle(X, Y, n, lam0, Nnd)
-
 phase_map = deflecting_spherical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f)
-phase_map_for_gen = deflecting_spherical_lens_gradient_map(X_for_gen, Y_for_gen, n, lam0, anglex, angley, f)
-cs_phase_map = phase_map_for_gen[Nnd//2, :]
+cs_phase_map = phase_map[Nnd//2, :]
 dphase = np.diff(cs_phase_map)
 
 ### Generate the needed dphase for needed angles
@@ -136,7 +137,7 @@ if plot_phase_map:
     fig     = plt.figure(figsize=(10,8))
     ax1     = fig.add_subplot(121)
     extent = [x_um.min(), x_um.max(), y_um.min(), y_um.max()]
-    ax1.imshow(np.mod(phase_map_for_gen, 2*np.pi), extent=extent)
+    ax1.imshow(np.mod(phase_map, 2*np.pi), extent=extent)
     ax2     = fig.add_subplot(122)
     plt.plot(cs_phase_map)
     print('Needed angles: ' + str(x_angle_design_unique))
@@ -146,29 +147,41 @@ fresnel_regions = {}
 for i, x_angle in enumerate(x_angle_design):
     
     comsol_index = np.argmin(np.abs(comsol_angle - x_angle))
-    if not comsol_angle[comsol_index] == x_angle:
-        print('Error: Selecting the wrong index in the .xslx-file')
         
     Pd     = comsol_pd[comsol_index]*NM
     g1     = comsol_g1[comsol_index]*NM
     g2     = comsol_g2[comsol_index]*NM
     g3     = comsol_g3[comsol_index]*NM
     g4     = comsol_g4[comsol_index]*NM
-    r      = comsol_r[comsol_index]*1.05*NM
+    r      = comsol_r[comsol_index]*NM*r_scale_factor
     region = x[np.where(x_angle_design == x_angle)]
+    number_supercells = int(np.abs(region.max() - region.min())/Pd)
     
+    if not comsol_angle[comsol_index] == x_angle:
+        print('Error: Selecting the wrong index in the .xslx-file')
+        print('Could not find: ' + str(x_angle))
+    else:
+        fresnel_regions[x_angle] =  {'from' : np.round(region.min(), 3) - r_offset,
+                                     'to' : np.round(region.max(), 3) - r_offset,
+                                     'Pd' : np.round(Pd, 3), 
+                                     'number' : number_supercells,
+                                     'anglex' : x_angle,
+                                     'g1' : g1,
+                                     'g2' : g2,
+                                     'g3' : g3,
+                                     'g4' : g4,
+                                     'r'  : r}
     
-    number_supercells = np.abs(region.max() - region.min())
-    fresnel_regions[x_angle] =  {'from' : np.round(region.min(), 3) - r_offset,
-                                 'to' : np.round(region.max(), 3) - r_offset,
-                                 'Pd' : np.round(Pd, 3), 
-                                 'number' : number_supercells,
-                                 'anglex' : x_angle,
-                                 'g1' : g1,
-                                 'g2' : g2,
-                                 'g3' : g3,
-                                 'g4' : g4,
-                                 'r'  : r}
+plot_fresnel_regions = False
+if plot_fresnel_regions:
+    for key in fresnel_regions.keys():
+        print('------------------')
+        print('For angle: ' + str(fresnel_regions[key]['anglex']))
+        print('Phase-map radius: ' + str((fresnel_regions[key]['to'] + fresnel_regions[key]['from'])/2))
+        
+        r_doublechecking = f*np.sin(fresnel_regions[key]['anglex']*DEG_TO_RAD)
+        
+        print('Trigonometry radius: ' + str(r_doublechecking))
 
     
 def create_cut_comp(angle, r, g1, g2, g3, g4, radius, width, pnd, radius_ms, layer_dict):
@@ -226,7 +239,7 @@ def create_cut_comp(angle, r, g1, g2, g3, g4, radius, width, pnd, radius_ms, lay
 
 ### ------------------------ Start creating mask ------------------------ ###
 save_folder_path = create_save_folder()
-ms_name = 'spherical_lens_40'
+ms_name = 'spherical_lens_f' + str(round(focal_plane)) + '_d' + str(round(np.abs(anglex)*RAD_TO_DEG))
 
 layer_dict = {'ms'     : {'layer': 1, 'datatype' : 0},
               'labels' : {'layer': 2, 'datatype' : 1}}
@@ -236,6 +249,7 @@ key = 'ms'
 top = gf.Component('TOP') 
 
 end_radius_diff = 0
+last_region_to = 0
 angles_used_to_create_ms = []
 for k, anglex in enumerate(fresnel_regions.keys()):
     bool_c = gf.Component('bool')
@@ -248,17 +262,19 @@ for k, anglex in enumerate(fresnel_regions.keys()):
     r      = fresnel_regions[anglex]['r']
     region_to = fresnel_regions[anglex]['to']
     region_from = fresnel_regions[anglex]['from']
-    
-    region_width   = np.abs(region_to - region_from)
-    region_radius  = np.abs((region_to + region_from))/2
-    region_radius_end = (region_to + region_from)/2
-    region_radius_circ = np.pi*region_radius
+    # region_from = last_region_to
     
     if k == 0:
         start_from = region_from
         
     if k > 0:
         start_from = region_from + end_radius_diff - 0.24
+        # start_from = region_from
+        
+    region_width   = np.abs(region_to - region_from)
+    region_radius  = np.abs((region_to + region_from))/2
+    region_radius_end = (region_to + region_from)/2
+    region_radius_circ = np.pi*region_radius
 
     angle_RAD = 2*np.arcsin(Pnd/(2*np.abs(region_to)))
     angle_DEG = angle_RAD*RAD_TO_DEG
@@ -270,27 +286,28 @@ for k, anglex in enumerate(fresnel_regions.keys()):
     angles_missed = angle_RAD/np.abs((number_cell_theta - number_cells_added))
     angles_to_add = angles_missed/number_cells_added
 
-    angle_RAD = angle_RAD + angles_to_add*60
+    angle_RAD = angle_RAD + angles_to_add*120
     angle_DEG = angle_RAD*RAD_TO_DEG
     
     for i in range(int(number_cell_r)):
         current_radius = start_from + i*Pd + Pd/2
         current_width  = Pd
     
-        super_cell = create_cut_comp(angle_DEG/2, r, g1, g2, g3, g4, np.abs(current_radius), current_width, Pnd, L, layer_dict)
+        super_cell = create_cut_comp(angle_DEG/2, r, g1, g2, g3, g4, np.abs(current_radius), current_width, Pnd, phase_map_size, layer_dict)
     
         for j in range(number_cells_added):            
             current_x = r_offset - current_radius*np.cos(angle_RAD*j)
             current_y = current_radius*np.sin(angle_RAD*j)
             current_r = np.sqrt(current_x**2 + current_y**2)
 
-            if current_r < L_real and current_x < L_real:
+            if current_r < ms_radius and current_x < ms_radius:
                 print('Added' + ' with angle: ' + str(anglex) + ' with ' + str(number_cells_added) + ' cells')
                 angles_used_to_create_ms.append(anglex)
                 super_cell_r = top << super_cell
                 super_cell_r.rotate(np.pi*RAD_TO_DEG + angle_DEG*j, (0, 0)).translate(-r_offset, 0)
     
     end_radius_diff = current_radius - region_to + Pd/2
+
     
 angles_used_to_create_ms = np.unique(np.array(angles_used_to_create_ms))
 
@@ -300,8 +317,4 @@ print('Angles used In the cutout MS: ' + str(x_angle_design_unique))
 
 save_path = Path(save_folder_path, ms_name)
 top.write_gds(str(save_path) + '.gds')
- 
-#%%
-
-
 
