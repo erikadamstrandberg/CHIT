@@ -105,27 +105,31 @@ def plot_focused_beam(E_incident, n, NA_objective, ax, ay, Nx, Ny, X, Y, anglex,
     
     fontsize_title  = 16
     fontsize_axis   = 15
+    y_cs_integrated = np.sum(I_k, axis=0)[:-1]
     
     plt.figure(2)
     plt.imshow(I_k, extent=extent_k, cmap='plasma')
     plt.plot(kx_objective, ky_objective, color='black', linewidth=0.8)
     plt.plot(kx_beam, ky_beam, '--', color='yellow', linewidth=0.5)
+    plt.plot(kx[0:-1], 0.7*(y_cs_integrated/max(y_cs_integrated))-0.95, 'red')
     plt.xlabel(r'$k_x/k$', fontsize=fontsize_axis)
     plt.ylabel(r'$k_y/k$', fontsize=fontsize_axis)
     plt.title(r'PAS, spherical lens, 61 $^{\circ}$', fontsize=fontsize_title)
+    plt.yticks([-0.5, 0, 0.5], fontsize = fontsize_axis)
+    plt.xticks([-0.5, 0, 0.5], fontsize = fontsize_axis)
     plt.tight_layout()
-    #plt.savefig(mypath/'PAS_cylindrical_61.png', dpi=600, format='png')
-    
+    plt.savefig(mypath/'PAS_spherical_61.png', dpi=600, format='png')
 
-    
+
+#%%    
     
 # Create beam
 # Setup simulation window
 Lx = 1*MM
 Ly = 1*MM
 
-ax = 420*NM
-ay = 420*NM
+ax = 500*NM
+ay = 500*NM
 
 Nx = int(Lx/ax)
 Ny = int(Ly/ay)
@@ -141,13 +145,13 @@ R    = np.sqrt(X**2 + Y**2)
 # Setup loosly focused beam in measurement
 lam0        = 976*NM
 n_air       = 1
-omega0      = 100*UM
+omega0      = 30*UM
 offset_x    = 0
 offset_y    = 0
 
 NA_objective = 0.95
 
-anglex = 55*RAD
+anglex = 61*RAD
 angley = 0*RAD
 
 f = 800*UM

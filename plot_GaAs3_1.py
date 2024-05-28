@@ -166,8 +166,8 @@ class MEL_9000_k_images():
         diffracted_k_x = NA_diffracted*np.cos(theta)
         diffracted_k_y = NA_diffracted*np.sin(theta)
         
-        fontsize_title  = 14
-        fontsize_axis   = 13
+        fontsize_title  = 16
+        fontsize_axis   = 15
         fontsize_legend = 10
         outer_pad       = 3
         width_pad       = 2
@@ -208,10 +208,14 @@ class MEL_9000_k_images():
         plt.figure(2)
         plt.imshow(self.image, extent=extent, origin='lower', cmap='plasma')
         plt.plot(outer_bound_k_x, outer_bound_k_y, 'black')
-        plt.plot(diffracted_k_x, diffracted_k_y, '--', color='red', linewidth=0.5)
+        plt.plot(diffracted_k_x, diffracted_k_y, '--', color='yellow', linewidth=0.5)
+        plt.plot(self.x_axis[0:-1], 0.7*(x_cs_integrated/max(x_cs_integrated))-0.95, 'red')
         plt.xlabel(r'$k_x/k$', fontsize=fontsize_axis)
         plt.ylabel(r'$k_y/k$', fontsize=fontsize_axis)
         plt.title(r'Measurement, 61$^{\circ}$', fontsize=fontsize_title)
+        plt.yticks([-0.5, 0, 0.5], fontsize = fontsize_axis)
+        plt.xticks([-0.5, 0, 0.5], fontsize = fontsize_axis)
+        plt.tight_layout()
         plt.savefig(mypath/'Measurement_61.png', dpi=600, format='png')
         
         
