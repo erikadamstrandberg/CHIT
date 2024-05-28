@@ -339,7 +339,7 @@ class MEL_9000_k_images():
 
 ## Data path
 measurment_name = 'GaAs3_4'
-what_measurement = 1
+what_measurement = 3
 
 image_path = list_image_path(measurment_name, what_measurement)
 image = MEL_9000_k_images(image_path)
