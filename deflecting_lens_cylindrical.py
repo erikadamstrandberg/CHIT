@@ -111,7 +111,7 @@ def plot_focused_beam(E_incident, n, NA_objective, ax, ay, Nx, Ny, X, Y, anglex,
     plt.plot(kx[0:-1], 0.7*(y_cs_integrated/max(y_cs_integrated))-0.95, 'red')
     plt.xlabel(r'$k_x/k$', fontsize=fontsize_axis)
     plt.ylabel(r'$k_y/k$', fontsize=fontsize_axis)
-    plt.title(r'PAS, cylindrical lens, 61 $^{\circ}$', fontsize=fontsize_title)
+    plt.title(r'Simulation, cylindrical lens, 61 $^{\circ}$', fontsize=fontsize_title)
     plt.yticks([-0.5, 0, 0.5], fontsize = fontsize_axis)
     plt.xticks([-0.5, 0, 0.5], fontsize = fontsize_axis)
     plt.tight_layout()
@@ -150,7 +150,9 @@ NA_objective = 0.95
 anglex = 65*RAD
 angley = 0*RAD
 
-f = 600*UM
+focal_plane = 600*UM
+
+f = focal_plane/np.cos(np.abs(anglex))
 
 E_incident = np.exp(-((X - offset_x)**2 + (Y - offset_y)**2)/omega0**2)
 

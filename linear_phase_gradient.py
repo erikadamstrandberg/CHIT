@@ -130,7 +130,7 @@ def plot_three_diffractive_orders(E_incident, ax, ay, Nx, Ny, X, Y, anglex, eta=
     plt.plot(kx[0:-1], 0.7*(y_cs_integrated/max(y_cs_integrated))-0.95, 'red')
     plt.xlabel(r'$k_x/k$', fontsize=fontsize_axis)
     plt.ylabel(r'$k_y/k$', fontsize=fontsize_axis)
-    plt.title(r'PAS, 61 $^{\circ}$', fontsize=fontsize_title)
+    plt.title(r'Simulation, 61 $^{\circ}$', fontsize=fontsize_title)
     plt.yticks([-0.5, 0, 0.5], fontsize = fontsize_axis)
     plt.xticks([-0.5, 0, 0.5], fontsize = fontsize_axis)
     plt.tight_layout()
