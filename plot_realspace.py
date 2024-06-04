@@ -23,6 +23,13 @@ def list_image_path(measurement, what_measurement):
     
     return image_paths
 
+def list_all_image_path(measurement):
+    project_path = Path(__file__).parent
+    measurement_path    = Path(project_path, 'measurement', measurement)
+
+    return os.listdir(measurement_path)
+
+
 
     
 ## Class for analysin images
@@ -221,11 +228,11 @@ image = MEL_9000_x_images(image_path)
 middle = (-5, 0.075)
 size = 1
 
-y_pos = 100e-4
-x_pos = 200e-4
-y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
+y_pos = 0
+# x_pos = 200e-4
+# y_pos_mid = -50e-4
+# y_pos_top = 8600e-4
+# y_pos_bottom = -8750e-4
 
 integrate_over = 400
 n = 1
@@ -239,130 +246,43 @@ contrast   = 60
 brightness = 60
 # image.plot_image(contrast, brightness)
 
-plot_on = False
+plot_on = True
 sodeg_y = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over, plot_on) #61 y
 
 
 #%%
-#PI = np.pi
 
-## Data path
-measurment_name = 'GaAs4_1'
-what_measurement = 27
+measurment_name = 'sph61_real'
+image_paths = list_all_image_path(measurment_name)
 
-image_path = list_image_path(measurment_name, what_measurement)
-image = MEL_9000_k_images(image_path)
-
-#middle = (0.205, 0.05) #10
-middle = (0.09, 0.1) #11
-# GaAs1_4_image.plot_image()
-size = 1
-
-y_pos = 100e-4
-x_pos = 200e-4
-y_pos_mid = -50e-4
-y_pos_top = 8600e-4
-y_pos_bottom = -8750e-4
+full_beam = np.zeros(shape=(len(image_paths), len(sodeg_y)))
 
 
-integrate_over = 30
-n = 1
-angle = 65
-angle_rad = angle*PI/180
-image.rotate_image(-270)
-image.remove_background(0)
-image.set_image_bounds(middle, size)
+for i, im in enumerate(image_paths):
+    print('Loading image: ' + str(i) + ' of ' + str(len(image_paths)))
+    project_path = Path(__file__).parent
+    measurement_path    = Path(project_path, 'measurement', measurment_name, im)
+    image = MEL_9000_x_images(image_path)
 
 
-contrast = 20
-brightness = 10
-#image.plot_image(contrast, brightness)
+    middle = (-5, 0.075)
+    size = 1
 
-sfdeg = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over) #65
-sfdeg_y = image.plot_image_and_y_cs(angle_rad, n, y_pos, integrate_over) #65 y
+    y_pos = 0
 
-#%%
+    integrate_over = 400
+    n = 1
+    angle = 61
+    angle_rad = angle*PI/180
+    image.rotate_image(-271)
+    image.remove_background(0)
+    # image.set_image_bounds(middle, size)
 
-# so_index = np.argmin(abs(sodeg[1228:1428]-1/np.exp(2)))
-# so_index_m = np.argmax(abs(sodeg[1228:1428]))
-# so_index_up = so_index_m + (so_index_m-so_index)
+    contrast   = 60
+    brightness = 60
+    # image.plot_image(contrast, brightness)
 
-# sf_index = np.argmin(abs(sfdeg[1228:1428]-1/np.exp(2)))
-# sf_index_m = np.argmax(abs(sfdeg[1228:1428]))
-# sf_index_up = sf_index_m + (sf_index_m-sf_index)
-# print((sf_index_m-sf_index))
+    plot_on = False
+    sodeg_y = image.plot_image_and_x_cs(angle_rad, n, y_pos, integrate_over, plot_on) #61 y
 
-plt.figure(1)
-plt.plot(sodeg, label = r'$61^{\circ}$')
-plt.plot(sfdeg, label = r'$65^{\circ}$')
-plt.grid(linewidth=1, alpha=0.3)
-plt.xlabel(r'$k_x/k$', fontsize=15)
-plt.ylabel(r'Counts [-]', fontsize=15)
-plt.legend(fontsize=15) 
-plt.title(r'Integrated cross-section', fontsize=16)
-plt.yticks(fontsize = 15)
-plt.xticks(fontsize = 15)
-plt.tight_layout()
-#plt.savefig(mypath/'GaAs4_1_sph_crossection_sph_61-65deg.png', dpi=600, format='png')
-
-# plt.figure(2)
-# plt.plot(sodeg[1228:1428], label = r'$61^{\circ}$')
-# plt.plot(sfdeg[1228:1428], label = r'$65^{\circ}$')
-# plt.axvline(x = so_index, linestyle = '--')
-# plt.axvline(x = so_index_up, linestyle = '--')
-# plt.axvline(x = sf_index, linestyle = '--', color = 'orange')
-# plt.axvline(x = sf_index_up, linestyle = '--', color = 'orange')
-# plt.grid(linewidth=1, alpha=0.3)
-# plt.xlabel(r'$k_x/k$', fontsize=15)
-# plt.ylabel(r'Counts [-]', fontsize=15)
-# plt.legend(fontsize=15) 
-# plt.title(r'Integrated cross-section (x)', fontsize=16)
-# plt.yticks(fontsize = 15)
-# plt.xticks(fontsize = 15)
-# plt.tight_layout()
-# plt.savefig(mypath/'GaAs4_1_sph_crossection_x_61-65deg_zoomed.png', dpi=600, format='png')
-
-#%%
-
-sodeg_y[708:719] = 0 
-
-so_index = np.argmin(abs(sodeg_y[600:800]-1/np.exp(2)))
-so_index_m = np.argmax(abs(sodeg_y[600:800]))
-so_index_up = so_index_m + (so_index_m-so_index)
-
-sf_index = np.argmin(abs(sfdeg_y[600:800]-1/np.exp(2)))
-sf_index_m = np.argmax(abs(sfdeg_y[600:800]))
-sf_index_up = sf_index_m + (sf_index_m-sf_index)
-
-print((sf_index_m-sf_index))
-
-
-plt.figure(2)
-plt.plot(sodeg_y, label = r'$61^{\circ}$')
-plt.plot(sfdeg_y, label = r'$65^{\circ}$')
-plt.grid(linewidth=1, alpha=0.3)
-plt.xlabel(r'$k_y/k$', fontsize=15)
-plt.ylabel(r'Counts [-]', fontsize=15)
-plt.legend(fontsize=15) 
-plt.title(r'Integrated cross-section (y)', fontsize=16)
-plt.yticks(fontsize = 15)
-plt.xticks(fontsize = 15)
-plt.tight_layout()
-#plt.savefig(mypath/'GaAs4_1_sph_crossection_y_61-65deg.png', dpi=600, format='png')
-
-# plt.figure(4)
-# plt.plot(sodeg_y[600:800], label = r'$61^{\circ}$')
-# plt.plot(sfdeg_y[600:800], label = r'$65^{\circ}$')
-# plt.axvline(x = so_index, linestyle = '--')
-# plt.axvline(x = so_index_up, linestyle = '--')
-# plt.axvline(x = sf_index, linestyle = '--', color = 'orange')
-# plt.axvline(x = sf_index_up, linestyle = '--', color = 'orange')
-# plt.grid(linewidth=1, alpha=0.3)
-# plt.xlabel(r'$k_y/k$', fontsize=15)
-# plt.ylabel(r'Counts [-]', fontsize=15)
-# plt.legend(fontsize=15) 
-# plt.title(r'Integrated cross-section (y)', fontsize=16)
-# plt.yticks(fontsize = 15)
-# plt.xticks(fontsize = 15)
-# plt.tight_layout()
-# #plt.savefig(mypath/'GaAs4_1_sph_crossection_y_61-65deg_zoomed.png', dpi=600, format='png')
+    
