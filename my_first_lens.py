@@ -338,17 +338,24 @@ CM = 10000
 MM = 1000
 NM = 1e-3
 
-r = 1000   # Metasurface radie
-P = 200*NM # Period
+# r = 250   # Metasurface radie
+# P = 200*NM # Period
 
-x = np.arange(-r, r, P)
+
+N               = 2**10                 # NxN är antalet samplade punkter (rekommenderad storlek N=1024)
+sidlaengd_Plan1 = 4*MM                  # Det samplade områdets storlek (i x- eller y-led) i Plan 1 (rekommenderad storlek 4 mm)
+a               = sidlaengd_Plan1/N     # Samplingsavstånd i Plan 1 (och Plan 2 eftersom vi använder PAS)
+
+x = np.arange(-(N/2)*a, (N/2)*a, a)     # Vektor med sampelpositioner i x-led
+
+# x = np.arange(-r, r, P)
 xx, yy = np.meshgrid(x, x)
 
-N = 2*r/P
+#N = 2*r/P
 
 n = 1
 lam0 = 973*NM
-f = 1000
+f = 600
 
 L = f
 
@@ -363,8 +370,8 @@ E1 = gauss*phi #phi_discrete_complex_large
 I1 = np.abs(E1)**2
 phase_profile = np.angle(E1)
 
-
-E2 = PAS(E1, L, N, P, lam0, n)         # Propagera med vår PAS funktion
+#(E1, L, N, a, lambda_noll, n_medium) 
+E2 = PAS(E1, L, N, a, lam0, n)         # Propagera med vår PAS funktion
 I2 = np.abs(E2)**2/np.max(np.abs(E2)**2)    # Intesitet i plan 2
 
 E2_cs = E2[int(N/2), :]
