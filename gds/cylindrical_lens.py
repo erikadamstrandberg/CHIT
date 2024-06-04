@@ -47,9 +47,12 @@ def linear_phase_gradient_map(X, Y, n, lam0, anglex, angley):
     return 2*PI - 2*PI*n/lam0*(X*np.sin(anglex) + Y*np.sin(angley))
 
 ### Generate needed angles from phase gradient
-def gradient_to_angle(X, Y, n, lam0, Nnd):
-    anglex_array = np.arange(30, 86, 1)
-    
+def gradient_to_angle(X, Y, n, lam0, Nnd, phase_discritazation):
+    if phase_discritazation:
+        anglex_array = np.arange(30, 86, 0.2)
+    else:
+        anglex_array = np.arange(30, 86, 1)
+        
     lookup_dict = {}
     dphase_array = np.zeros(len(anglex_array))
 
@@ -83,6 +86,7 @@ comsol_g4    = np.array(comsol_dataframe['g4'])
 ### Set size of meta surface 
 ms_diameter = 300*UM
 
+
 ### Pd does not really matter since it will be reshaped!
 Pd  = 50*NM
 Pnd = 240*NM
@@ -101,11 +105,12 @@ X_for_gen, Y_for_gen = np.meshgrid(x_for_gen, y)
 R                    = np.sqrt(X**2 + Y**2)
 
 ### Important parameters
-focal_plane = 600*UM
+focal_plane = 800*UM
 anglex      = -61*DEG_TO_RAD
 
 ### Fab correction
-r_scale_factor = 1.05
+r_scale_factor = 115/110
+
 
 ### Parameters for generated lens
 n            = 1
@@ -114,7 +119,9 @@ angley       = 0
 f            = focal_plane/np.cos(np.abs(anglex))
 r_offset     = -f*np.sin(np.abs(anglex))
 
-(gradient_to_angle_look_up, dphase_array) = gradient_to_angle(X, Y, n, lam0, Nnd)
+phase_discritazation = True
+
+(gradient_to_angle_look_up, dphase_array) = gradient_to_angle(X, Y, n, lam0, Nnd, phase_discritazation)
 phase_map         = deflecting_cylindrical_lens_gradient_map(X, Y, n, lam0, anglex, angley, f)
 phase_map_for_gen = deflecting_cylindrical_lens_gradient_map(X_for_gen, Y_for_gen, n, lam0, anglex, angley, f)
 cs_phase_map      = phase_map_for_gen[Nnd//2, :]
@@ -144,35 +151,119 @@ fresnel_regions = {}
 x_reshaped = np.zeros(1)
 for i, x_angle_current in enumerate(x_angle_design):
     
-    comsol_index = np.argmin(np.abs(comsol_angle - x_angle_current))
-        
-    Pd     = comsol_pd[comsol_index]*NM
-    g1     = comsol_g1[comsol_index]*NM
-    g2     = comsol_g2[comsol_index]*NM
-    g3     = comsol_g3[comsol_index]*NM
-    g4     = comsol_g4[comsol_index]*NM
-    r      = comsol_r[comsol_index]*NM*r_scale_factor
-    
-    region = x[np.where(x_angle_design == x_angle_current)]
-    number_supercells = int(np.abs(region.max() - region.min())/Pd)
-    
-    if not comsol_angle[comsol_index] == x_angle_current:
-        print('Error: Selecting the wrong index in the .xslx-file')
-        print('Could not find: ' + str(x_angle_current))
+    if phase_discritazation:
+        if np.isclose(x_angle_current, np.round(x_angle_current), 0.0001):
+            x_angle_current = round(x_angle_current)
+            comsol_index = np.argmin(np.abs(comsol_angle - x_angle_current))
+                
+            Pd     = comsol_pd[comsol_index]*NM
+            g1     = comsol_g1[comsol_index]*NM
+            g2     = comsol_g2[comsol_index]*NM
+            g3     = comsol_g3[comsol_index]*NM
+            g4     = comsol_g4[comsol_index]*NM
+            r      = comsol_r[comsol_index]*NM*r_scale_factor
+            
+            
+            # print(np.isclose(x_angle_design, x_angle_current))
+            # region = x[np.where(x_angle_design == x_angle_current)]
+            # print(region)
+            region = x[np.isclose(x_angle_design, x_angle_current, 0.0001)]
+            
+            # print(np.where(np.isclose(x_angle_design, x_angle_current, 0.0001)))
+
+            number_supercells = int(np.abs(region.max() - region.min())/Pd)
+            
+            if not comsol_angle[comsol_index] == x_angle_current:
+                print('Error: Selecting the wrong index in the .xslx-file')
+                print('Could not find: ' + str(x_angle_current))
+            else:
+                fresnel_regions[x_angle_current] =  {'from'   : np.round(region.min() - r_offset, 3),
+                                                      'to'     : np.round(region.max() - r_offset, 3),
+                                                      'Pd'     : np.round(Pd, 3), 
+                                                      'number' : number_supercells,
+                                                      'anglex' : x_angle_current,
+                                                      'g1'     : g1,
+                                                      'g2'     : g2,
+                                                      'g3'     : g3,
+                                                      'g4'     : g4,
+                                                      'r'      : r}
+        else:
+            
+            
+            x_angle_current_above = np.ceil(x_angle_current)
+            x_angle_current_below = np.floor(x_angle_current)
+            comsol_index_above = np.argmin(np.abs(comsol_angle - x_angle_current_above))
+            comsol_index_below = np.argmin(np.abs(comsol_angle - x_angle_current_below))
+            
+            Pd_above     = comsol_pd[comsol_index_above]*NM
+            g1_above     = comsol_g1[comsol_index_above]*NM
+            g2_above     = comsol_g2[comsol_index_above]*NM
+            g3_above     = comsol_g3[comsol_index_above]*NM
+            g4_above     = comsol_g4[comsol_index_above]*NM
+            
+            Pd_below     = comsol_pd[comsol_index_below]*NM
+            g1_below     = comsol_g1[comsol_index_below]*NM
+            g2_below     = comsol_g2[comsol_index_below]*NM
+            g3_below     = comsol_g3[comsol_index_below]*NM
+            g4_below     = comsol_g4[comsol_index_below]*NM
+            r            = comsol_r[comsol_index_below]*NM*r_scale_factor
+            
+            scaling = x_angle_current - np.floor(x_angle_current)
+            
+            Pd = Pd_above*scaling + Pd_below*(1 - scaling)
+            g1 = g1_above*scaling + g1_below*(1 - scaling)
+            g2 = g2_above*scaling + g2_below*(1 - scaling)
+            g3 = g3_above*scaling + g3_below*(1 - scaling)
+            g4 = g4_above*scaling + g4_below*(1 - scaling)
+            
+            region = x[np.isclose(x_angle_design, x_angle_current, 0.001)]
+            number_supercells = int(np.abs(region.max() - region.min())/Pd)
+            
+            fresnel_regions[x_angle_current] =  {'from'   : np.round(region.min() - r_offset, 3),
+                                                  'to'     : np.round(region.max() - r_offset, 3),
+                                                  'Pd'     : np.round(Pd, 3), 
+                                                  'number' : number_supercells,
+                                                  'anglex' : x_angle_current,
+                                                  'g1'     : g1,
+                                                  'g2'     : g2,
+                                                  'g3'     : g3,
+                                                  'g4'     : g4,
+                                                  'r'      : r}
+            
+            
+            
+            
+            
     else:
-        fresnel_regions[x_angle_current] =  {'from'   : np.round(region.min() - r_offset, 3),
-                                             'to'     : np.round(region.max() - r_offset, 3),
-                                             'Pd'     : np.round(Pd, 3), 
-                                             'number' : number_supercells,
-                                             'anglex' : x_angle_current,
-                                             'g1'     : g1,
-                                             'g2'     : g2,
-                                             'g3'     : g3,
-                                             'g4'     : g4,
-                                             'r'      : r}
     
+        comsol_index = np.argmin(np.abs(comsol_angle - x_angle_current))
+            
+        Pd     = comsol_pd[comsol_index]*NM
+        g1     = comsol_g1[comsol_index]*NM
+        g2     = comsol_g2[comsol_index]*NM
+        g3     = comsol_g3[comsol_index]*NM
+        g4     = comsol_g4[comsol_index]*NM
+        r      = comsol_r[comsol_index]*NM*r_scale_factor
+        
+        region = x[np.where(x_angle_design == x_angle_current)]
+        number_supercells = int(np.abs(region.max() - region.min())/Pd)
+        
+        if not comsol_angle[comsol_index] == x_angle_current:
+            print('Error: Selecting the wrong index in the .xslx-file')
+            print('Could not find: ' + str(x_angle_current))
+        else:
+            fresnel_regions[x_angle_current] =  {'from'   : np.round(region.min() - r_offset, 3),
+                                                 'to'     : np.round(region.max() - r_offset, 3),
+                                                 'Pd'     : np.round(Pd, 3), 
+                                                 'number' : number_supercells,
+                                                 'anglex' : x_angle_current,
+                                                 'g1'     : g1,
+                                                 'g2'     : g2,
+                                                 'g3'     : g3,
+                                                 'g4'     : g4,
+                                                 'r'      : r}
     
-plot_fresnel_regions = True
+plot_fresnel_regions = False
 if plot_fresnel_regions:
     for key in fresnel_regions.keys():
         print('------------------')
